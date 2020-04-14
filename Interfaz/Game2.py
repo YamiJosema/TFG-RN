@@ -104,7 +104,7 @@ def letras(pulsadas, tablero):
                 vuelta=colocar_letra(letters[letra][0], tablero)
                 if not vuelta:
                     pulsadas.append(letters[letra][0])
-#                 print(pulsadas)
+                print(pulsadas)
         elif letters[letra][0] not in pulsadas:
             gameDisplay.blit(letters[letra][1],(x,y))
         elif letters[letra][0] in pulsadas:
@@ -251,7 +251,6 @@ def parar_reiniciar():
             
     
 if __name__=="__main__":
-#     print ("hola")
     pygame.init()
     
     pulsadas=[]

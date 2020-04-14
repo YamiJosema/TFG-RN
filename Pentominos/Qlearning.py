@@ -11,9 +11,9 @@ def qlearning(tablero,qtable=False):
         pentominos = cargar_pentominos()
         qtable = np.random.rand(len(pentominos)*11*12+1,len(pentominos)).tolist()
     
-    epochs =50
+    epochs =100
     gamma = 0.2#0.1
-    epsilon = 0.5#0.08
+    epsilon = 0.2#0.08
     decay = 0.1
     
     limit=200

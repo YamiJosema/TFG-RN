@@ -2,7 +2,6 @@ import numpy as np
 from Pentominos.Formas import modelo
 from Pentominos.Utilidades import cargar_pentominos, Formas
 import random 
-from _operator import pos
 
 
 class Tablero:
@@ -215,6 +214,13 @@ class Tablero:
                     else:
                         if self.board[i][j-1]!=0 and self.board[i][j+1]!=0 and self.board[i-1][j]!=0 and self.board[i+1][j]!=0:
                             self.board[i][j]=jugador*-1
+                            
+                            
+    def limpiar_huecos(self):
+        for i in range(self.x):
+            for j in range(self.y):
+                if self.board[i][j]==10:
+                    self.board[i][j]=0   
     
     
 # --------------------------------------------------OTROS METODOS-------------------------------------------------------------------    
@@ -275,13 +281,6 @@ class Tablero:
         else:
             colocado=False
         return colocado
-    
-    
-    def limpiar_huecos(self):
-        for i in range(self.x):
-            for j in range(self.y):
-                if self.board[i][j]==10:
-                    self.board[i][j]=0    
     
     
     def uno_cerca(self, i,j):
