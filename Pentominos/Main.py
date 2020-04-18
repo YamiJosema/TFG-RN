@@ -114,8 +114,8 @@ def introduciendo_letras(n):
         if len(result[0])<len(save) or not save:
             save=result[0]
             victoria=result[1]
-    print save
-    print victoria
+    print (save)
+    print (victoria)
         
         
 def crear_conjunto_entrenamiento(x,y):
@@ -143,7 +143,7 @@ def crear_conjunto_entrenamiento(x,y):
                 loop=0
                 cut+=1
         
-    print "Completada la creacion de entrenamiento.csv"
+    print ("Completada la creacion de entrenamiento.csv")
 
 
 def get_max(array):
@@ -198,7 +198,7 @@ def red_neuronal(): #Parametros de entrada para el tamaño del tablero
 #     print red.layers[0].np
 #     print red.layers[1].np
     
-    print "Comienza el entrenamiento"
+    print ("Comienza el entrenamiento")
      
     red.train(entrada, objetivo, lr=0.1, epochs=1000, show=100, goal=0.001)
      
@@ -243,10 +243,10 @@ if __name__=="__main__":
     
     conjunto_correcto()
     salida, tableros = red_neuronal()
-    print salida
+    print (salida)
     for i in range(len(tableros)):
-        print tableros[i]
-        print get_max(salida[i])
+        print (tableros[i])
+        print (get_max(salida[i]))
         
 #     for pieza in salida:
 #         print get_max(pieza)
