@@ -54,6 +54,9 @@ if __name__=="__main__":
 #     env=Env()
     tablero = Tablero(8,8)
     pentominos = cargar_pentominos()
+    
+    print("AQUI-------------------------------------------------------")
+    print(len(pentominos))
      
     # QTable : contains the Q-Values for every (state,action) pair
     qtable = np.random.rand(len(pentominos)*11*12+1,len(pentominos)).tolist()

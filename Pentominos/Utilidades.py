@@ -35,3 +35,43 @@ def crear_pentominos_csv():
                     filewriter.writerow([i,j,0])
                     if i not in no_inversa:
                         filewriter.writerow([i,j,1])
+                        
+
+def rango_por_letra(orden):
+    rangos={}
+    posicion=0
+    cuatro_posiciones=["T","U","V","W","Z"]
+    for letra in orden:
+        if letra in cuatro_posiciones:
+            rangos[letra]=(posicion,posicion+4)
+            posicion+=4
+        elif letra=="X":
+            rangos[letra]=(posicion,posicion+1)
+            posicion+=1
+        elif letra=="I":
+            rangos[letra]=(posicion,posicion+2)
+            posicion+=2
+        else:
+            rangos[letra]=[posicion,posicion+8]
+            posicion+=8
+    return rangos      
+
+
+def posicion_real(posicion, letra, orden):
+    posicion_real=posicion
+    cuatro_posiciones=["T","U","V","W","Z"]
+    for l in orden:
+        if l!=letra:
+            if l in cuatro_posiciones:
+                posicion_real+=4
+            elif l=="X":
+                posicion_real+=1
+            elif l=="I":
+                posicion_real+=2
+            else:
+                posicion_real+=8
+        if l==letra:
+            break
+    return posicion_real
+        
+    

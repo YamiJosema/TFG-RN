@@ -47,8 +47,26 @@ class Tablero:
     
     def ficha_aleatoria(self):
 #         print("Ficha aleatoria")
-        ficha = self.fichas[random.randint(0,len(self.fichas)-1)]
+        no_inversa=["T","U","V","W"]
+        letra=self.pentominos[0]
+        if letra in no_inversa:
+            rotacion=str(random.randint(0,3))
+            inversa="0"
+        elif letra=="Z":
+            rotacion=str(random.randint(0,1))
+            inversa=str(random.randint(0,1))
+        elif letra=="X":
+            rotacion="0"
+            inversa="0"
+        elif letra=="I":
+            rotacion=str(random.randint(0,1))
+            inversa="0"
+        else:
+            rotacion=str(random.randint(0,3))
+            inversa=str(random.randint(0,1))
+        ficha=[letra, rotacion, inversa]
         action = self.fichas.index(ficha)
+        
         return action
     
 
@@ -69,21 +87,23 @@ class Tablero:
             if colocado:
 #                 print("Colocada satisfactoriamente en la posicion ("+str(i)+", "+str(j)+")")
                 self.fichas_colocadas+=1
-                ficha=[pentomino.letra,str(pentomino.rotacion),str(pentomino.invertido)]
-                next_state=(self.fichas.index(ficha)+1)*self.fichas_colocadas*(Formas.index(pent[0])+1)
+                
+#                 ficha=[pentomino.letra,str(pentomino.rotacion),str(pentomino.invertido)]
+                next_state=action
                 
                 self.buscar_huecos(action)
                 penalizacion=self.penalizacion(action)
-                penalizacion*=0.2#0.1
+#                 penalizacion*=0.1#0.2
                 
                 self.piezas.append(action)
             else:
 #                 print("La ficha no puede ser colocada en el tablero")
+#                TODO penalizar en puntos si la ficha no se puede colocar en el tablero (interesante que el tablero guarde las puntiaciones)
                 next_state=state
         else:
             next_state=state
         
-        reward=1-penalizacion if next_state!=state else -100 #TODO penalizacion por huecos
+        reward=penalizacion*-10 if next_state!=state else -1000 #TODO penalizacion por huecos
         
         fin,_=self.siguiente_zero()
         done=True if fin==-1 else False
