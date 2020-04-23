@@ -5,12 +5,12 @@ import random
 
 
 class Tablero:
-    def __init__(self,x,y):
+    def __init__(self,x,y, orden):
         self.x=x
         self.y=y
         self.done = False;
         self.board = np.zeros((x,y), dtype=np.int)
-        self.pentominos=["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+        self.pentominos=orden.copy()
         self.movimientos=[]
         self.fichas_colocadas=0
         self.fichas=cargar_pentominos()
@@ -18,27 +18,21 @@ class Tablero:
         
     
     def copy(self):
-        tablero=Tablero(self.x,self.y)
+        tablero=Tablero(self.x,self.y,self.pentominos)
         tablero.done = self.done;
         tablero.board = np.copy(self.board)
-        aux=[]
-        aux.append(self.pentominos)
-        tablero.pentominos=aux
-        aux=[]
-        aux.append(self.movimientos)
-        tablero.movimientos=aux
+        tablero.pentominos=self.pentominos.copy()
+        tablero.movimientos=self.movimientos.copy()
         tablero.fichas_colocadas=self.fichas_colocadas
-        aux=[]
-        aux.append(self.piezas)
-        tablero.piezas=aux
+        tablero.piezas=self.piezas.copy()
         
         return tablero
 
 
-    def reset(self):
+    def reset(self,orden):
         self.done = False;
         self.board = np.zeros((self.x,self.y), dtype=np.int)
-        self.pentominos=["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+        self.pentominos=orden.copy()
         self.movimientos=[]
         self.fichas_colocadas=0
         self.piezas=[]
@@ -49,21 +43,19 @@ class Tablero:
 #         print("Ficha aleatoria")
         no_inversa=["T","U","V","W"]
         letra=self.pentominos[0]
+        rotacion=str(random.randint(0,3))
+        inversa=str(random.randint(0,1))
         if letra in no_inversa:
-            rotacion=str(random.randint(0,3))
             inversa="0"
         elif letra=="Z":
             rotacion=str(random.randint(0,1))
-            inversa=str(random.randint(0,1))
         elif letra=="X":
             rotacion="0"
             inversa="0"
-        elif letra=="I":
+        else: # letra=="I":
             rotacion=str(random.randint(0,1))
             inversa="0"
-        else:
-            rotacion=str(random.randint(0,3))
-            inversa=str(random.randint(0,1))
+            
         ficha=[letra, rotacion, inversa]
         action = self.fichas.index(ficha)
         
@@ -73,7 +65,7 @@ class Tablero:
     def colocar_siguiente(self, action,state):
 #         print("Colocar siguiente")
         penalizacion=0
-        pent=self.fichas[action]
+        pent=self.fichas[action-1]
         pentomino = Pentomino(pent[0],int(pent[1]),int(pent[2]))
         if pentomino.letra in self.pentominos:
             colocado=False
@@ -95,7 +87,7 @@ class Tablero:
                 penalizacion=self.penalizacion(action)
 #                 penalizacion*=0.1#0.2
                 
-                self.piezas.append(action)
+                self.piezas.append(action-1)
             else:
 #                 print("La ficha no puede ser colocada en el tablero")
 #                TODO penalizar en puntos si la ficha no se puede colocar en el tablero (interesante que el tablero guarde las puntiaciones)
@@ -319,7 +311,7 @@ class Tablero:
     
     def comprobar_fichas(self,i,j,aux_board): #Done
 #         print("Comprobar fichas")
-        tablero_aux=Tablero(len(aux_board),len(aux_board[0]))
+        tablero_aux=Tablero(len(aux_board),len(aux_board[0]),self.pentominos)
         tablero_aux.board=np.copy(aux_board)
         for letra in self.pentominos:
             for rot in range(4):

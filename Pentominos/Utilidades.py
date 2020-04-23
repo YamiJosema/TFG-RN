@@ -39,20 +39,20 @@ def crear_pentominos_csv():
 
 def rango_por_letra(orden):
     rangos={}
-    posicion=0
+    posicion=1
     cuatro_posiciones=["T","U","V","W","Z"]
     for letra in orden:
         if letra in cuatro_posiciones:
-            rangos[letra]=(posicion,posicion+4)
+            rangos[letra]=(posicion,posicion+3)
             posicion+=4
         elif letra=="X":
-            rangos[letra]=(posicion,posicion+1)
+            rangos[letra]=(posicion,posicion)
             posicion+=1
         elif letra=="I":
-            rangos[letra]=(posicion,posicion+2)
+            rangos[letra]=(posicion,posicion+1)
             posicion+=2
         else:
-            rangos[letra]=[posicion,posicion+8]
+            rangos[letra]=(posicion,posicion+7)
             posicion+=8
     return rangos      
 
