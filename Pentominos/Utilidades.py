@@ -3,23 +3,24 @@ import csv
 
 Formas=["F","I","L","N","P","T","U","V","W","X","Y","Z"]
 
-def cargar_pentominos():
+def cargar_pentominos(orden):
     pentominos=[]
     if os.path.isfile('csv/pentominos.csv')==False:
-        crear_pentominos_csv()
+        crear_pentominos_csv(orden)
     
     with open('csv/pentominos.csv', 'r', encoding="utf8") as f:
         reader = csv.reader(f)
         for row in reader:
-            pentominos.append(row)
+            if row!=[]: #Genera filas vacias, NO SE PORQUE
+                pentominos.append(row)
     return pentominos
 
 
-def crear_pentominos_csv():
+def crear_pentominos_csv(orden):
     no_inversa=["T","U","V","W"]
-    with open('csv/pentominos.csv', 'wb') as csvfile:
+    with open('csv/pentominos.csv', 'w') as csvfile:
         filewriter = csv.writer(csvfile, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        for i in Formas:
+        for i in orden:
             if i=="X":
                 filewriter.writerow(["X",0,0])
             elif i=="I":

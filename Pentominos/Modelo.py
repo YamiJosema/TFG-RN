@@ -1,6 +1,6 @@
 import numpy as np
 from Pentominos.Formas import modelo
-from Pentominos.Utilidades import cargar_pentominos, Formas
+from Pentominos.Utilidades import cargar_pentominos
 import random 
 
 
@@ -13,7 +13,7 @@ class Tablero:
         self.pentominos=orden.copy()
         self.movimientos=[]
         self.fichas_colocadas=0
-        self.fichas=cargar_pentominos()
+        self.fichas=cargar_pentominos(orden)
         self.piezas=[]
         
     
