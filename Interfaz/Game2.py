@@ -3,8 +3,8 @@ from Pentominos.Formas import modelo
 import numpy as np
 import random
 from Pentominos.Modelo import Tablero, Pentomino
-from Pentominos.Qlearning import qlearning
-from Pentominos.Utilidades import Formas
+from Pentominos.Qlearning2 import qlearning2
+from Pentominos.Utilidades import Formas, cargar_pentominos, rango_por_letra, posicion_real
 
     
 W_CUBO = 50
@@ -89,23 +89,13 @@ def load_letras():
     return letters, hoverl, offl
 
 
-def letras(pulsadas, tablero):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-    letters, hoverl, offl = load_letras()
+def panel_letras(pulsadas):
+    letters,_,offl = load_letras()
     x=540
     y=25
     column=0
     for letra in range(len(letters)):
-        if x+150>mouse[0]>x and y+150>mouse[1]>y and letters[letra][0] not in pulsadas:
-            gameDisplay.blit(hoverl[letra],(x,y))
-            if click[0]==1:
-                gameDisplay.blit(offl[letra],(x,y))
-                vuelta=colocar_letra(letters[letra][0], tablero)
-                if not vuelta:
-                    pulsadas.append(letters[letra][0])
-                print(pulsadas)
-        elif letters[letra][0] not in pulsadas:
+        if letters[letra][0] not in pulsadas:
             gameDisplay.blit(letters[letra][1],(x,y))
         elif letters[letra][0] in pulsadas:
             gameDisplay.blit(offl[letra],(x,y))
@@ -116,6 +106,33 @@ def letras(pulsadas, tablero):
             x=540
             y=y+160
             column=0
+
+
+# def letras(pulsadas, tablero):
+#     mouse = pygame.mouse.get_pos()
+#     click = pygame.mouse.get_pressed()
+#     letters, hoverl, offl = load_letras()
+#     x=540
+#     y=25
+#     column=0
+#     for letra in range(len(letters)):
+#         if letters[letra][0]==tablero.pentominos[0]:
+#             gameDisplay.blit(offl[letra],(x,y))
+#             vuelta=colocar_letra(letters[letra][0], tablero)
+#             if not vuelta:
+#                 pulsadas.append(letters[letra][0])
+#             print(pulsadas)
+#         elif letters[letra][0] not in pulsadas:
+#             gameDisplay.blit(letters[letra][1],(x,y))
+#         elif letters[letra][0] in pulsadas:
+#             gameDisplay.blit(offl[letra],(x,y))
+#         if column != 3:
+#             x=x+160
+#             column+=1
+#         else:
+#             x=540
+#             y=y+160
+#             column=0
             
 
 def comprobar_colocar_letra(pentomino, tablero):
@@ -141,7 +158,8 @@ def comprobar_colocar_letra(pentomino, tablero):
     return pos_x,pos_y
 
 
-def colocar_letra(letra, tablero):
+def colocar_letra(tablero):
+    letra=tablero.pentominos[0]
     rotacion=0
     pentomino = Pentomino(letra,rotacion,0)
     colocada = False
@@ -183,10 +201,10 @@ def colocar_letra(letra, tablero):
                         else:
                             TURNOS.append(1)
                     board(tablero)
-                elif tecla == "escape":
-                    vuelta = True
-                    colocada = True
-                    board(tablero)
+#                 elif tecla == "escape":
+#                     vuelta = True
+#                     colocada = True
+#                     board(tablero)
                 elif tecla== "e":
                     posicionada = False
                     pentomino.invertir()
@@ -263,14 +281,15 @@ if __name__=="__main__":
     clock = pygame.time.Clock()
     
     gameDisplay.fill(BLACK)
-    tablero = Tablero(8,8)
+    tablero = Tablero(8,8, FORMAS)
     board(tablero)
     
-    qtable = qlearning(tablero.copy())
+    qtable = qlearning2(tablero.copy())
 
     out = False
     
     p1,p2=0,0
+    print("COMIENZA EL JUEGO")
     
     while not out:
         
@@ -284,36 +303,36 @@ if __name__=="__main__":
             if event.type is pygame.QUIT:
                 out = True
         if i!=-1:
+            panel_letras(pulsadas)
             if TURNOS[-1]==1:
-                letras(pulsadas, tablero)
+                colocar_letra(tablero)
+                TURNOS.append(2)
             else:
-                qtable = qlearning(tablero.copy(),qtable)
-                ficha_correcta=False
-                colocado=False
-                while (not ficha_correcta) or (not colocado):
-                    ultimo_pentomino=tablero.movimientos[-1][0]
-                    ficha=[ultimo_pentomino.letra,str(ultimo_pentomino.rotacion),str(ultimo_pentomino.invertido)]
-                    state=(tablero.fichas.index(ficha)+1)*tablero.fichas_colocadas*(Formas.index(ultimo_pentomino.letra)+1)
-#                     print("Estado del tablero: "+str(state))
-                    action = qtable[state].index(max(qtable[state]))
-                    pent = tablero.fichas[action]
-                    pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
-                    print("Accion siguiente: "+pentomino.letra)
-                    if pentomino.letra not in pulsadas:
-                        ficha_correcta=True
-                    else:
-                        qtable[state][action]=-100
-                    if ficha_correcta:
-                        for i in range(tablero.x):
-                            for j in range(tablero.y):
-                                colocado=tablero.colocar_pentomino_2p(pentomino, i, j, TURNOS[-1])
-                                if colocado:break
-                            if colocado:break
-                        if colocado:
-                            colocado=True
-                        else:
-                            qtable[state][action]=-100
-                    
+                ultimo_movimiento=tablero.movimientos[-1][0]
+                state=tablero.fichas.index(ultimo_movimiento)
+                print(state)
+                
+                rangos = rango_por_letra(tablero.pentominos)
+                action_completo = qtable[state] #Acciones para el estado
+                action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
+                zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
+                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
+                action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
+                rand = random.randint(0,len(action_maximo[0])-1)
+                action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
+                action=posicion_real(action_relativo, tablero.pentominos[0], FORMAS)
+                
+                print(action)
+                
+                pent = tablero.fichas[action]
+                pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
+                
+                for i in range(tablero.x):
+                    for j in range(tablero.y):
+                        colocado=tablero.colocar_pentomino_2p(pentomino, i, j, TURNOS[-1])
+                        if colocado:break
+                    if colocado:break
+                
                 pulsadas.append(pentomino.letra)
                 tablero.buscar_huecos(TURNOS[-1])
                 print(tablero)
@@ -323,7 +342,7 @@ if __name__=="__main__":
             win(p1,p2)
         pr=parar_reiniciar()
         if pr=="Replay":
-            tablero=Tablero(8,8)
+            tablero=Tablero(8,8,FORMAS)
             pulsadas=[]
             board(tablero)
             turno = random.randint(1,2)

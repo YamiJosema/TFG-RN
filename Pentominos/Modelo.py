@@ -288,7 +288,8 @@ class Tablero:
                 cy=y
             if colocado:
                 self.pentominos.remove(pentomino.letra)
-                self.movimientos.append((pentomino,x,y))
+                movimiento=[pentomino.letra,str(pentomino.rotacion), str(pentomino.invertido)]
+                self.movimientos.append((movimiento,x,y))
                 self.fichas_colocadas+=1
         else:
             colocado=False
