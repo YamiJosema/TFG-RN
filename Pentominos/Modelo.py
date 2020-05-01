@@ -2,6 +2,7 @@ import numpy as np
 from Pentominos.Formas import modelo
 from Pentominos.Utilidades import cargar_pentominos
 import random 
+from builtins import next
 
 
 class Tablero:
@@ -95,8 +96,14 @@ class Tablero:
         else:
             next_state=state
         
-        reward=penalizacion*-10 if next_state!=state else -1000 #TODO penalizacion por huecos
-        
+        if next_state!=state:
+            if penalizacion>0:
+                reward=penalizacion*-10 #penalizacion por huecos
+            else:
+                reward=20
+        else:
+            reward=-1000
+            
         fin,_=self.siguiente_zero()
         done=True if fin==-1 else False
 
