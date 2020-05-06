@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from Pentominos.Formas import modelo
 from Pentominos.Utilidades import cargar_pentominos
@@ -140,37 +141,46 @@ class Tablero:
     
     def comprobar_pentomino(self, pentomino):
         valido=False
-        while not valido:
-            pos_x, pos_y=self.siguiente_zero()
-            if pos_x==-1:
-                break
-            if pentomino.letra=="X" or (pentomino.letra=="T" and pentomino.modelo[0][0]==0):
-                org_y=pos_y-1
-#                 print("LETRA X: "+pentomino.letra)
-#                 print("Origniales: ("+str(pos_x)+", "+str(org_y)+")")
-                valido=self.comprobar_pentomino_individual(pentomino,pos_x,org_y)
-#                 print("Valido O: "+str(valido))
+#         while not valido:
+        for i in range(self.x):
+            for j in range(self.y):
+                valido=self.comprobar_pentomino_individual(pentomino,i,j)
                 if valido:
-                    pos_y=org_y
-                if not valido and org_y>=0:
-                    self.board[pos_x][pos_y]=10
-            if not valido:
-#                 print("LETRA: "+pentomino.letra)
-#                 print("Origniales: ("+str(pos_x)+", "+str(pos_y)+")")
-                valido_O=self.comprobar_pentomino_individual(pentomino,pos_x,pos_y)
-#                 print("Valido O: "+str(valido_O))
-                aux_y=pos_y-(len(pentomino.modelo[0])-1)
-#                 print("Modificados: ("+str(pos_x)+", "+str(aux_y)+")")
-                valido_M=self.comprobar_pentomino_individual(pentomino,pos_x, aux_y)
-#                 print("Valido M: "+str(valido_M))
-                if valido_M:
-                    pos_y=aux_y
-                if not valido_O and not valido_M:
-                    self.board[pos_x][pos_y]=10
-                valido=valido_O  or valido_M
-        self.limpiar_huecos()
-#         print("Posicion Final: ("+str(pos_x)+", "+str(pos_y)+")")
-        return pos_x, pos_y
+                    return i,j
+        return -1, -1
+        
+#         valido=False
+#         while not valido:
+#             pos_x, pos_y=self.siguiente_zero()
+#             if pos_x==-1:
+#                 break
+#             if pentomino.letra=="X" or (pentomino.letra=="T" and pentomino.modelo[0][0]==0):
+#                 org_y=pos_y-1
+# #                 print("LETRA X: "+pentomino.letra)
+# #                 print("Origniales: ("+str(pos_x)+", "+str(org_y)+")")
+#                 valido=self.comprobar_pentomino_individual(pentomino,pos_x,org_y)
+# #                 print("Valido O: "+str(valido))
+#                 if valido:
+#                     pos_y=org_y
+#                 if not valido and org_y>=0:
+#                     self.board[pos_x][pos_y]=10
+#             if not valido:
+# #                 print("LETRA: "+pentomino.letra)
+# #                 print("Origniales: ("+str(pos_x)+", "+str(pos_y)+")")
+#                 valido_O=self.comprobar_pentomino_individual(pentomino,pos_x,pos_y)
+# #                 print("Valido O: "+str(valido_O))
+#                 aux_y=pos_y-(len(pentomino.modelo[0])-1)
+# #                 print("Modificados: ("+str(pos_x)+", "+str(aux_y)+")")
+#                 valido_M=self.comprobar_pentomino_individual(pentomino,pos_x, aux_y)
+# #                 print("Valido M: "+str(valido_M))
+#                 if valido_M:
+#                     pos_y=aux_y
+#                 if not valido_O and not valido_M:
+#                     self.board[pos_x][pos_y]=10
+#                 valido=valido_O  or valido_M
+#         self.limpiar_huecos()
+# #         print("Posicion Final: ("+str(pos_x)+", "+str(pos_y)+")")
+#         return pos_x, pos_y
     
     
     def siguiente_zero(self):
@@ -411,6 +421,9 @@ class Tablero:
                             self.board=aux_board
                             self.cerrar_hueco(huecos)
                             
+                            
+#     def siguiente_hueco(self, pentomino):
+#         #TODO Buscar las posiciones x e y el pentomino
                             
     def __str__(self):
         return str(self.board)

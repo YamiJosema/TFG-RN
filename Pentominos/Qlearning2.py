@@ -2,85 +2,85 @@
 import numpy as np
 import sys
 import random
+import os
 from Pentominos.Modelo import Tablero
 from Pentominos.Utilidades import cargar_pentominos, rango_por_letra, posicion_real
+from numpy import float32
 
 
-def qlearning2(tablero, epochs=100, gamma=0.4, epsilon=0.3, decay=0.01, limit=200):
-    orden = tablero.pentominos
-    pentominos = cargar_pentominos(orden)
-    no_colocadas=[]
-    rangos = rango_por_letra(orden)
-    
-    qtable = np.matrix(np.zeros([len(pentominos)+1,len(pentominos)+1]))
-    np.set_printoptions(threshold=sys.maxsize)
-    
-    for i in range(epochs):
-        state, penalty, done = tablero.reset(orden)
-        steps = 0
-       
-        while not done:
-            # act randomly sometimes to allow exploration
-            letra_actual=tablero.pentominos[0]
-
-            if np.random.uniform() < epsilon:
-                action=tablero.ficha_aleatoria() #Usamos colocar random para poner una ficha aleatoria
-            # if not select max action in Qtable (act greedy)
-            else:
-                #TODO convertir en un metodo para no reptir codigo
-                action_completo = qtable[state] #Acciones para el estado
-                action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
-                zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
-                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
-                action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
-                rand = random.randint(0,len(action_maximo[0])-1)
-                action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
-                action=posicion_real(action_relativo, tablero.pentominos[0], orden) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
-
-                action+=1 #Sumamos uno para contar en la tabla el hueco para la posici�n 0
-       
-            # take action
-            next_state, penalty, done = tablero.colocar_siguiente(action,state) #Importante comprobar que la letra no este ya usada y que no quedan huecos para el reward
-
-            # update qtable value with Bellman equation
-            if done or not tablero.pentominos:
-                qtable[state,action]=100+penalty
-            else:
-                reward_maximo=valor_maximo(qtable,rangos,letra_actual, next_state)
-                while reward_maximo==-1000:
-                    no_colocadas.append(letra_actual) #La ficha se ha probado en todas direcciones y no cabe en el tablero, asi que se pasa turno
-                    tablero.pentominos.pop(0) #TODO no modificar la variable del tablero para no perder puntuacion
-                    if not tablero.pentominos:
-                        break
-                    letra_actual=tablero.pentominos[0]
-                    reward_maximo=valor_maximo(qtable,rangos,letra_actual, next_state)
-                qtable[state,action] = (penalty + gamma * reward_maximo) if penalty>-1000 else penalty
-                
-                
-            # update state
-            state = next_state
-            
-            # count steps to finish game
-            steps += 1
-            
-            if steps>limit or not tablero.pentominos:
-                done=True
-            
-        # The more we learn, the less we take random actions
-        epsilon -= decay*epsilon
-           
-        print(" ")
-        print("epoch #", i+1, "/", epochs," .Step: ",steps)
-        print(tablero)
-        no_colocadas.append(tablero.pentominos)
-        print(no_colocadas)
-        print(tablero.piezas)
-        print(tablero.fichas_colocadas)
-        
+def qlearning2(tablero, epochs=1000, gamma=0.4, epsilon=0.7, decay=0.01, limit=200):
+    if os.path.isfile('../Pentominos/learning/alfabetico.txt')==True:
+        print("Fichero qlearning encontrado")
+        qtable = np.loadtxt('../Pentominos/learning/alfabetico.txt', dtype=float32)
+    else:
+        print("Fichero no encontrado, pasamos a hacer el proceso de aprendizaje, esto llevara unos segundos")
+        orden = tablero.pentominos
+        pentominos = cargar_pentominos(orden)
         no_colocadas=[]
-       
-        print("\nDone in", steps, "steps".format(steps))
+        rangos = rango_por_letra(orden)
+        
+        qtable = np.matrix(np.zeros([len(pentominos)+1,len(pentominos)+1]))
+        np.set_printoptions(threshold=sys.maxsize)
+        
+        for _ in range(epochs):
+            state, penalty, done = tablero.reset(orden)
+            steps = 0
+            
+            no_colocadas=[]
+            fila_aux=[]
+            last_state=state
+            while not done:
+                letra_actual=tablero.pentominos[0]
+                if last_state!=state or not np.any(fila_aux):
+                    fila_aux=np.copy(qtable[state])
+                last_state=state
+     
+                if np.random.uniform() < epsilon:
+                    action=tablero.ficha_aleatoria() #Usamos colocar random para poner una ficha aleatoria
+                else:
+                    #TODO convertir en un metodo para no reptir codigo
+                    action_completo = fila_aux#qtable[state] #Acciones para el estado
+                    action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
+                    zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
+                    action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
+                    action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
+                    rand = random.randint(0,len(action_maximo[0])-1)
+                    action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
+                    action=posicion_real(action_relativo, tablero.pentominos[0], orden) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
+     
+                action+=1 #Sumamos uno para contar en la tabla el hueco para la posici�n 0
+            
+                next_state, penalty, done = tablero.colocar_siguiente(action,state) #Importante comprobar que la letra no este ya usada y que no quedan huecos para el reward
     
+                if done or not tablero.pentominos:
+                    faltantes=len(tablero.pentominos)+len(no_colocadas)
+                    qtable[state,action]=100-10*faltantes
+                    if faltantes<=1:
+                        epsilon -= decay*epsilon
+                else: 
+                    if penalty==-1000:
+                        fila_aux[0][action]=penalty
+                        
+                        reward_completo = fila_aux #Buscamos en el estado
+                        zona=rangos[letra_actual] #Obtenemos la zona de la table que afecta a la letra actual #Convertimos en array "aplaanamos"
+                        reward_plano = np.squeeze(np.asarray(reward_completo)) #Convertimos en array "aplaanamos"
+                        reward_cortado=reward_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
+                        reward_maximo = np.where(reward_cortado==np.amax(reward_cortado))
+                        if len(reward_cortado)==len(reward_maximo[0]):
+                            no_colocadas.append(letra_actual) #La ficha se ha probado en todas direcciones y no cabe en el tablero, asi que se pasa turno
+                            tablero.pentominos.pop(0) #TODO no modificar la variable del tablero para no perder puntuacion
+    
+                    else:
+                        reward_maximo=valor_maximo(qtable,rangos,tablero.pentominos[0], next_state)  #TODO
+                        qtable[state,action] = (penalty + gamma * reward_maximo)
+                     
+                state = next_state
+                 
+                steps += 1
+                 
+                if steps>limit or not tablero.pentominos:
+                    done=True
+        np.savetxt('learning/alfabetico.txt', qtable, fmt='%f')
     return qtable
     
 
@@ -115,7 +115,7 @@ if __name__=="__main__":
 #     np.set_printoptions(threshold=np.inf)
      
     # hyperparameters
-    epochs = 10000 #epocas
+    epochs = 1 #epocas
     gamma = 0.4#0.1
     epsilon = 0.9#0.08
     decay = 0.01

@@ -135,86 +135,96 @@ def panel_letras(pulsadas):
 #             column=0
             
 
-def comprobar_colocar_letra(pentomino, tablero):
-    pos_x,pos_y=tablero.comprobar_pentomino(pentomino)
-    if pos_x>0:     
-        mov_x=pos_x
-        mov_y=pos_y
-        forma = pentomino.modelo
-        for i in range(len(forma)):
-            for j in range(len(forma[0])):
-                if forma[i][j]==1:
-                    if tablero.board[mov_x][mov_y]==0:
-                        if TURNOS[-1]==1:
-                            cuadrado(mov_x, mov_y,ROJO)
-                        else:
-                            cuadrado(mov_x, mov_y,AZUL)
-                mov_y+=1
-            mov_y=pos_y
-            mov_x+=1
-    else:
-        print("Se queda fuera")
-    pygame.display.update() 
-    return pos_x,pos_y
+# def comprobar_colocar_letra(pentomino, tablero):
+#     pos_x,pos_y=tablero.comprobar_pentomino(pentomino)
+#     if pos_x>0:     
+#         mov_x=pos_x
+#         mov_y=pos_y
+#         forma = pentomino.modelo
+#         for i in range(len(forma)):
+#             for j in range(len(forma[0])):
+#                 if forma[i][j]==1:
+#                     if tablero.board[mov_x][mov_y]==0:
+#                         if TURNOS[-1]==1:
+#                             cuadrado(mov_x, mov_y,ROJO)
+#                         else:
+#                             cuadrado(mov_x, mov_y,AZUL)
+#                 mov_y+=1
+#             mov_y=pos_y
+#             mov_x+=1
+#     else:
+#         print("Se queda fuera")
+#     pygame.display.update() 
+#     return pos_x,pos_y
 
+def pintar_letra(opcion):
+    forma = opcion[0].modelo
+    mov_x=opcion[1]
+    mov_y=opcion[2]
+    for i in range(len(forma)):
+        for j in range(len(forma[0])):
+            if forma[i][j]==1:
+                if tablero.board[mov_x][mov_y]==0:
+                    if TURNOS[-1]==1:
+                        cuadrado(mov_x, mov_y,ROJO)
+                    else:
+                        cuadrado(mov_x, mov_y,AZUL)
+            mov_y+=1
+        mov_y=opcion[2]
+        mov_x+=1
+    pygame.display.update()
+    
 
-def colocar_letra(tablero):
-    letra=tablero.pentominos[0]
-    rotacion=0
-    pentomino = Pentomino(letra,rotacion,0)
+def opciones(tablero,):
+    rangos=rango_por_letra(FORMAS)
+    rango=rangos[tablero.pentominos[0]]
+    opciones=[]
+#     print("Rango "+str(rango))
+    for r in range(rango[0],rango[1]+1):
+        pent=tablero.fichas[r-1]
+        pentomino = Pentomino(pent[0],int(pent[1]),int(pent[2]))
+#         print("Pentomino "+str(pentomino))
+        x,y=tablero.comprobar_pentomino(pentomino)
+#         print("("+str(x)+","+str(y)+")")
+        if x!=-1:
+            opciones.append([pentomino,x,y])
+    return opciones
+    
+
+def colocar_letra(tablero, opciones):
     colocada = False
     posicionada = False
-    vuelta = False
+    r=0
     while not colocada:
+        p=opciones[r]
         if not posicionada:
-            pos_x,pos_y=tablero.comprobar_pentomino(pentomino)
-            if pos_x>=0:     
-                mov_x=pos_x
-                mov_y=pos_y
-                forma = pentomino.modelo
-                for i in range(len(forma)):
-                    for j in range(len(forma[0])):
-                        if forma[i][j]==1:
-                            if tablero.board[mov_x][mov_y]==0:
-                                if TURNOS[-1]==1:
-                                    cuadrado(mov_x, mov_y,ROJO)
-                                else:
-                                    cuadrado(mov_x, mov_y,AZUL)
-                        mov_y+=1
-                    mov_y=pos_y
-                    mov_x+=1
-            pygame.display.update() 
             posicionada = True
+            pintar_letra(p)
+                    
         for event in pygame.event.get():
             if event.type is pygame.KEYDOWN:
                 tecla = pygame.key.name(event.key)
                 if tecla == "return":
-                    colocada = tablero.colocar_pentomino_2p(pentomino,pos_x,pos_y,TURNOS[-1]) #jugador
-                    if not colocada:
-                        posicionada = False
-                        pos_x=-1
-                        pos_y=-1
+                    colocada=tablero.colocar_pentomino_2p(p[0],p[1],p[2],TURNOS[-1]) #jugador
+                    tablero.buscar_huecos(TURNOS[-1])
+                    if TURNOS[-1]==1:
+                        TURNOS.append(2)
                     else:
-                        tablero.buscar_huecos(TURNOS[-1])
-                        if TURNOS[-1]==1:
-                            TURNOS.append(2)
-                        else:
-                            TURNOS.append(1)
+                        TURNOS.append(1)
                     board(tablero)
-#                 elif tecla == "escape":
-#                     vuelta = True
-#                     colocada = True
-#                     board(tablero)
-                elif tecla== "e":
+                elif tecla== "d":
                     posicionada = False
-                    pentomino.invertir()
+                    r+=1
+                    if r>=len(opciones):
+                        r=0
                     board(tablero)
-                elif tecla== "r":
-#                     if pos_x+len(forma[0])<=tablero.x and pos_y+len(forma)<=tablero.y:
-                        posicionada = False
-                        pentomino.rotar(1)
-                        board(tablero)
-    return vuelta
+                elif tecla== "a":
+                    posicionada = False
+                    r-=1
+                    if r<0:
+                        r=len(opciones)-1
+                    board(tablero)
+    return p[0]
             
 
 def display_text(texto, x, y, size, color):   
@@ -274,7 +284,7 @@ if __name__=="__main__":
     pulsadas=[]
     
     turno = random.randint(1,2)
-    TURNOS.append(1)
+    TURNOS.append(random.randint(1,2))
     
     gameDisplay = pygame.display.set_mode((display_width, display_height))
     pygame.display.set_caption('Prueba1')
@@ -305,39 +315,67 @@ if __name__=="__main__":
         if i!=-1:
             panel_letras(pulsadas)
             if TURNOS[-1]==1:
-                colocar_letra(tablero)
+                print("Turno jugador 1")
+                op=opciones(tablero)
+                while not op:
+#                     print("Descartamos la "+tablero.pentominos[0])
+                    tablero.pentominos.pop(0)
+                    op=opciones(tablero)
+                ficha_colocada=colocar_letra(tablero,op)
+                pulsadas.append(ficha_colocada.letra)
                 TURNOS.append(2)
+                pygame.display.update()
+#                 print("Ficha: "+str(tablero.movimientos[-1][0]))
+                print(tablero)
             else:
-                ultimo_movimiento=tablero.movimientos[-1][0]
-                state=tablero.fichas.index(ultimo_movimiento)
-                print(state)
+                print("Turno jugador 2")
+                op=opciones(tablero)
+                while not op:
+                    print("Descartamos la "+tablero.pentominos[0])
+                    tablero.pentominos.pop(0)
+                    op=opciones(tablero)
+                
+                valida=False
+                if not tablero.movimientos:
+                    state=0
+                else:
+                    ultimo_movimiento=tablero.movimientos[-1][0]
+                    state=tablero.fichas.index(ultimo_movimiento)
                 
                 rangos = rango_por_letra(tablero.pentominos)
-                action_completo = qtable[state] #Acciones para el estado
+                action_completo = np.copy(qtable[state])#qtable[state] #Acciones para el estado
+                print(len(action_completo))
                 action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
                 zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
                 action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
-                action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
-                rand = random.randint(0,len(action_maximo[0])-1)
-                action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
-                action=posicion_real(action_relativo, tablero.pentominos[0], FORMAS)
-                
-                print(action)
-                
-                pent = tablero.fichas[action]
-                pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
-                
-                for i in range(tablero.x):
-                    for j in range(tablero.y):
-                        colocado=tablero.colocar_pentomino_2p(pentomino, i, j, TURNOS[-1])
-                        if colocado:break
-                    if colocado:break
+                while not valida:
+                    action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
+                    print("Maximos "+str(action_maximo))
+                    rand = random.randint(0,len(action_maximo[0])-1)
+                    action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
+                    action=posicion_real(action_relativo, tablero.pentominos[0], FORMAS) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
+                    action+=1
+                    print("Ficha(numero) "+str(action))
+                    pent = tablero.fichas[action-1]#Comprobar que entra, si no entra ponemos a -1000 esa posicion en la qtable y elegimos otro de los maximos
+                    print("Ficha: "+str(pent))
+                    pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
+                    
+                    x,y=tablero.comprobar_pentomino(pentomino)
+                    
+                    if x==-1:
+                        print("No es valida")
+                        action_cortado[action_relativo]=-1000
+                    else:
+                        print("Es valida")
+                        valida=True
+                tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
                 
                 pulsadas.append(pentomino.letra)
                 tablero.buscar_huecos(TURNOS[-1])
                 print(tablero)
                 board(tablero)
                 TURNOS.append(1)
+                pygame.display.update()
         elif i==-1:
             win(p1,p2)
         pr=parar_reiniciar()

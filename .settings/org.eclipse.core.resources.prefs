@@ -2,6 +2,7 @@ eclipse.preferences.version=1
 encoding//Interfaz/Main.py=utf-8
 encoding//Pentominos/Interfaz.py=utf-8
 encoding//Pentominos/Main.py=utf-8
+encoding//Pentominos/Modelo.py=utf-8
 encoding//Pentominos/Qlearning2.py=utf-8
 encoding//Pentominos/Utilidades.py=utf-8
 encoding//Redes/Isis.py=utf-8
