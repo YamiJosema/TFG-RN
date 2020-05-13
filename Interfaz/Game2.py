@@ -166,13 +166,12 @@ def pintar_letra(opcion):
             if forma[i][j]==1:
                 if tablero.board[mov_x][mov_y]==0:
                     if TURNOS[-1]==1:
-                        cuadrado(mov_x, mov_y,ROJO)
+                        cuadrado(mov_x, mov_y,VIOLETA)
                     else:
                         cuadrado(mov_x, mov_y,AZUL)
             mov_y+=1
         mov_y=opcion[2]
         mov_x+=1
-    pygame.display.update()
     
 
 def opciones(tablero,):
@@ -195,12 +194,16 @@ def colocar_letra(tablero, opciones):
     colocada = False
     posicionada = False
     r=0
+    out=False
+    replay=False
     while not colocada:
         p=opciones[r]
         if not posicionada:
             posicionada = True
             pintar_letra(p)
-                    
+            teclas_escR()
+            pygame.display.update()
+            
         for event in pygame.event.get():
             if event.type is pygame.KEYDOWN:
                 tecla = pygame.key.name(event.key)
@@ -224,7 +227,13 @@ def colocar_letra(tablero, opciones):
                     if r<0:
                         r=len(opciones)-1
                     board(tablero)
-    return p[0]
+                elif tecla=="escape":
+                    out=True
+                    colocada=True
+                elif tecla=="r":
+                    replay=True
+                    colocada=True
+    return p[0], replay, out
             
 
 def display_text(texto, x, y, size, color):   
@@ -261,6 +270,17 @@ def win(p1,p2):
         gameDisplay.blit(corona,(display_width*0.66, display_height*0.81))
     elif p1==p2:
         pass
+    
+
+def teclas_escR():
+    display_text("Reiniciar",display_width*0.47, display_height*0.79, 35, WHITE)
+    display_text("Salir",display_width*0.57, display_height*0.79, 35, WHITE)
+    esc=pygame.image.load('images/tecla_esc.png')
+    r=pygame.image.load('images/tecla_r.png')
+    r = pygame.transform.scale(r, (50, 50))
+    gameDisplay.blit(r,(display_width*0.45, display_height*0.81))
+    esc = pygame.transform.scale(esc, (50, 50))
+    gameDisplay.blit(esc,(display_width*0.55, display_height*0.81))
             
 
 def parar_reiniciar():
@@ -297,6 +317,7 @@ if __name__=="__main__":
     qtable = qlearning2(tablero.copy())
 
     out = False
+    replay=False
     
     p1,p2=0,0
     print("COMIENZA EL JUEGO")
@@ -305,7 +326,7 @@ if __name__=="__main__":
         
         i,j=tablero.siguiente_zero()
         p1, p2 = get_puntuacion(tablero)
-        pygame.draw.rect(gameDisplay,BLACK,[0, display_height*0.85-50,display_width,100])
+        pygame.draw.rect(gameDisplay,BLACK,[0, display_height*0.85-60,display_width,100])
         display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, WHITE)
         display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, WHITE)
         
@@ -321,7 +342,8 @@ if __name__=="__main__":
 #                     print("Descartamos la "+tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
-                ficha_colocada=colocar_letra(tablero,op)
+                ficha_colocada,replay,out=colocar_letra(tablero,op)
+                
                 pulsadas.append(ficha_colocada.letra)
                 TURNOS.append(2)
                 pygame.display.update()
@@ -369,7 +391,7 @@ if __name__=="__main__":
                         print("Es valida")
                         valida=True
                 tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
-                
+                teclas_escR()
                 pulsadas.append(pentomino.letra)
                 tablero.buscar_huecos(TURNOS[-1])
                 print(tablero)
@@ -378,15 +400,21 @@ if __name__=="__main__":
                 pygame.display.update()
         elif i==-1:
             win(p1,p2)
-        pr=parar_reiniciar()
-        if pr=="Replay":
+            pr=parar_reiniciar()
+            if pr=="Replay":
+                tablero=Tablero(8,8,FORMAS)
+                pulsadas=[]
+                board(tablero)
+                turno = random.randint(1,2)
+                TURNOS.append(turno)
+            elif pr=="Stop":
+                out=True
+        if replay:
             tablero=Tablero(8,8,FORMAS)
             pulsadas=[]
             board(tablero)
             turno = random.randint(1,2)
-            TURNOS.append(1)
-        elif pr=="Stop":
-            out=True
+            TURNOS.append(turno)
         pygame.display.update()
         
         clock.tick(30)

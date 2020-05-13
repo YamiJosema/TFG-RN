@@ -8,7 +8,7 @@ from Pentominos.Utilidades import cargar_pentominos, rango_por_letra, posicion_r
 from numpy import float32
 
 
-def qlearning2(tablero, epochs=1000, gamma=0.4, epsilon=0.7, decay=0.01, limit=200):
+def qlearning2(tablero, epochs=10000, gamma=0.4, epsilon=0.9, decay=0.01, limit=200):
     if os.path.isfile('../Pentominos/learning/alfabetico.txt')==True:
         print("Fichero qlearning encontrado")
         qtable = np.loadtxt('../Pentominos/learning/alfabetico.txt', dtype=float32)
