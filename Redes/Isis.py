@@ -7,7 +7,7 @@ from neurolab import train
 from neurolab import error
 from neurolab import net
 from sklearn import preprocessing
-from sklearn import cross_validation
+from sklearn.model_selection import train_test_split
 
 def especie_lirio(array):
     m = max([(array[i],i) for i in range(3)])
@@ -24,7 +24,7 @@ def rendimiento_red (red):
 
 
 if __name__=="__main__":
-    iris = pandas.read_csv('iris.csv', header=None, names=['Longitud s�palo', 'Anchura s�palo','Longitud p�talo', 'Anchura p�talo','Especie'])
+    iris = pandas.read_csv('iris.csv', header=None, names=['Longitud sépalo', 'Anchura sépalo','Longitud pétalo', 'Anchura pétalo','Especie'])
     iris.head(10)  # Diez primeros ejemplos
     
     ###### try: # para la versi�n antigua de sklearn: 
@@ -37,7 +37,7 @@ if __name__=="__main__":
     iris['Especie'] = le.fit_transform(iris['Especie']) # Codifica cada valor para Especie
     
     # Divido el conjunto iris de dos: el de entrenamiento es el 33% de los datos
-    iris_entrenamiento, iris_prueba = cross_validation.train_test_split(
+    iris_entrenamiento, iris_prueba = train_test_split(
         iris, test_size=.33, random_state=2346523,
         stratify=iris['Especie'])
     
@@ -47,16 +47,19 @@ if __name__=="__main__":
     entrada_prueba = iris_prueba.iloc[:, :4 ] # todas las filas, de las 4 columnas primeras
     objetivo_prueba = iris_prueba['Especie'] #Columna Especie
     
-    print "ENTRADA ENTRENAMIENTO"
+    print ("ENTRADA ENTRENAMIENTO")
     print(entrada_entrenamiento.head(10))
-    print "OBJETIVO ENTRENAMIENTO"
+    print(entrada_entrenamiento.ndim)
+    print("OBJETIVO ENTRENAMIENTO")
     print(objetivo_entrenamiento[:10])
     
     print(entrada_prueba.head(10))
     print(objetivo_prueba.head(10))
     
-    rangos = [rango(iris['Longitud s�palo']),rango(iris['Anchura s�palo']),rango(iris['Longitud p�talo']),rango(iris['Anchura p�talo'])]
-
+    rangos = [rango(iris['Longitud sépalo']),rango(iris['Anchura sépalo']),rango(iris['Longitud pétalo']),rango(iris['Anchura pétalo'])]
+    
+    print("Rangos "+str(rangos))
+    
     rediris = net.newff(minmax=rangos, size=[2, 3], transf=[trans.LogSig()]*2) # 1, 2, 3, 4
     for capa in rediris.layers:
         capa.initf = init.init_zeros                                             # 5
@@ -71,6 +74,8 @@ if __name__=="__main__":
     print(rediris.layers[0].np)
     print(rediris.layers[1].np)
     
+    print(entrada_entrenamiento)
+    print(objetivo_entrenamiento)
     # Entrenamos
     rediris.train(entrada_entrenamiento, objetivo_entrenamiento, lr=0.01, epochs=1000, show=100, goal=0.001)
     
@@ -97,5 +102,5 @@ if __name__=="__main__":
     print(rediris1.errorf(objetivo_entrenamiento, rediris1.sim(entrada_entrenamiento)))
     rendimiento_red(rediris1)
     
-    print "-----------"
-    print rediris1.sim(entrada_entrenamiento)
+    print ("-----------")
+    print (rediris1.sim(entrada_entrenamiento))

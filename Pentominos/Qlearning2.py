@@ -8,7 +8,7 @@ from Pentominos.Utilidades import cargar_pentominos, rango_por_letra, posicion_r
 from numpy import float32
 
 
-def qlearning2(tablero, epochs=10000, gamma=0.4, epsilon=0.9, decay=0.01, limit=200):
+def qlearning2(tablero, epochs=30000, gamma=0.4, epsilon=0.9, decay=0.01, limit=200):
     if os.path.isfile('../Pentominos/learning/alfabetico.txt')==True:
         print("Fichero qlearning encontrado")
         qtable = np.loadtxt('../Pentominos/learning/alfabetico.txt', dtype=float32)
@@ -22,7 +22,7 @@ def qlearning2(tablero, epochs=10000, gamma=0.4, epsilon=0.9, decay=0.01, limit=
         qtable = np.matrix(np.zeros([len(pentominos)+1,len(pentominos)+1]))
         np.set_printoptions(threshold=sys.maxsize)
         
-        for _ in range(epochs):
+        for i in range(epochs):
             state, penalty, done = tablero.reset(orden)
             steps = 0
             
@@ -34,21 +34,23 @@ def qlearning2(tablero, epochs=10000, gamma=0.4, epsilon=0.9, decay=0.01, limit=
                 if last_state!=state or not np.any(fila_aux):
                     fila_aux=np.copy(qtable[state])
                 last_state=state
-     
+                action_completo = fila_aux#qtable[state] #Acciones para el estado
+                action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplanamos"
+                zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
+                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
+                    
                 if np.random.uniform() < epsilon:
                     action=tablero.ficha_aleatoria() #Usamos colocar random para poner una ficha aleatoria
                 else:
-                    #TODO convertir en un metodo para no reptir codigo
-                    action_completo = fila_aux#qtable[state] #Acciones para el estado
-                    action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
-                    zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
-                    action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
-                    action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
-                    rand = random.randint(0,len(action_maximo[0])-1)
-                    action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
+                    if np.count_nonzero(action_cortado)!=len(action_cortado):
+                        action_tratado = np.where(action_cortado==np.amin(action_cortado)) #cogemos los indices que tengan el valor maximo
+                    else:
+                        action_tratado = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
+                    rand = random.randint(0,len(action_tratado[0])-1)
+                    action_relativo = action_tratado[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
                     action=posicion_real(action_relativo, tablero.pentominos[0], orden) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
      
-                action+=1 #Sumamos uno para contar en la tabla el hueco para la posici�n 0
+                action+=1 #Sumamos uno para contar en la tabla el hueco para la posicion 0
             
                 next_state, penalty, done = tablero.colocar_siguiente(action,state) #Importante comprobar que la letra no este ya usada y que no quedan huecos para el reward
     
@@ -80,7 +82,15 @@ def qlearning2(tablero, epochs=10000, gamma=0.4, epsilon=0.9, decay=0.01, limit=
                  
                 if steps>limit or not tablero.pentominos:
                     done=True
-        np.savetxt('learning/alfabetico.txt', qtable, fmt='%f')
+            print(" ")
+            print("epoch #", i+1, "/", epochs," .Step: ",steps)
+            print(tablero)
+            no_colocadas.append(tablero.pentominos)
+            print(no_colocadas)
+            print(tablero.piezas)
+            print("Epsilon "+str(epsilon))
+            print("\nDone in", steps, "steps".format(steps))
+        np.savetxt('../Pentominos/learning/alfabetico.txt', qtable, fmt='%f')
     return qtable
     
 

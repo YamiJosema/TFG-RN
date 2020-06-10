@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pygame
 from Pentominos.Formas import modelo
 import numpy as np
@@ -369,7 +370,7 @@ if __name__=="__main__":
                 print(len(action_completo))
                 action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
                 zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
-                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
+                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones #TODO revisar
                 while not valida:
                     action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
                     print("Maximos "+str(action_maximo))
@@ -410,6 +411,7 @@ if __name__=="__main__":
             elif pr=="Stop":
                 out=True
         if replay:
+            replay=False
             tablero=Tablero(8,8,FORMAS)
             pulsadas=[]
             board(tablero)
