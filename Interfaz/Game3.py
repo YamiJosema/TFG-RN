@@ -6,7 +6,7 @@ import random
 from Pentominos.Modelo import Tablero, Pentomino
 from Pentominos.Qlearning2 import qlearning2
 from Pentominos.Utilidades import Formas, cargar_pentominos, rango_por_letra, posicion_real
-
+from Pentominos.Neuronales import red_neuronal, get_max
     
 W_CUBO = 50
 display_width = 1200
@@ -305,7 +305,7 @@ if __name__=="__main__":
     pulsadas=[]
     
     turno = random.randint(1,2)
-    TURNOS.append(random.randint(1,2))
+    TURNOS.append(2)#random.randint(1,2))
     
     gameDisplay = pygame.display.set_mode((display_width, display_height))
     pygame.display.set_caption('Prueba1')
@@ -315,7 +315,8 @@ if __name__=="__main__":
     tablero = Tablero(8,8, FORMAS)
     board(tablero)
     
-    qtable = qlearning2(tablero.copy())
+#     qtable = qlearning2(tablero.copy())
+    red=red_neuronal()
 
     out = False
     replay=False
@@ -359,38 +360,38 @@ if __name__=="__main__":
                     op=opciones(tablero)
                 
                 valida=False
+                
+                entrada=[]
+                aux=[0]*63
                 if not tablero.movimientos:
                     state=0
+                    entrada.append(aux)
+                    
                 else:
                     ultimo_movimiento=tablero.movimientos[-1][0]
-                    state=tablero.fichas.index(ultimo_movimiento)
+                    estado=tablero.fichas.index(ultimo_movimiento)
+                    print(estado)
+                    aux[estado]=1
+                    print(aux)
+                    entrada.append(aux)
+                print(entrada)
+                solucion=red.sim(entrada)
+                state,action=get_max(entrada[0],solucion[0])
+#                 action+=1
+                print("Estado, accion: ("+str(state)+", "+str(action)+")")
                 
-                rangos = rango_por_letra(tablero.pentominos)
-                action_completo = np.copy(qtable[state])#qtable[state] #Acciones para el estado
-                print(len(action_completo))
-                action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
-                zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
-                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones #TODO revisar
-                while not valida:
-                    action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
-                    print("Maximos "+str(action_maximo))
-                    rand = random.randint(0,len(action_maximo[0])-1)
-                    action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
-                    action=posicion_real(action_relativo, tablero.pentominos[0], FORMAS) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
-                    action+=1
-                    print("Ficha(numero) "+str(action))
-                    pent = tablero.fichas[action-1]#Comprobar que entra, si no entra ponemos a -1000 esa posicion en la qtable y elegimos otro de los maximos
-                    print("Ficha: "+str(pent))
-                    pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
+                pent = tablero.fichas[action]#Comprobar que entra, si no entra, elegimos otro de los m�ximos
+                print("Ficha: "+str(pent))
+                pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
+                
+                x,y=tablero.comprobar_pentomino(pentomino)
                     
-                    x,y=tablero.comprobar_pentomino(pentomino)
-                    
-                    if x==-1:
-                        print("No es valida")
-                        action_cortado[action_relativo]=-1000
-                    else:
-                        print("Es valida")
-                        valida=True
+                if x==-1:
+                    print("No es valida")
+                else:
+                    print("Es valida")
+                    valida=True
+                        
                 tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
                 teclas_escR()
                 pulsadas.append(pentomino.letra)
