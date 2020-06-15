@@ -107,6 +107,7 @@ def panel_letras(pulsadas):
             x=540
             y=y+160
             column=0
+    pygame.display.update()
 
 
 # def letras(pulsadas, tablero):
@@ -305,7 +306,7 @@ if __name__=="__main__":
     pulsadas=[]
     
     turno = random.randint(1,2)
-    TURNOS.append(2)#random.randint(1,2))
+    TURNOS.append(random.randint(1,2))
     
     gameDisplay = pygame.display.set_mode((display_width, display_height))
     pygame.display.set_caption('Prueba1')
@@ -341,9 +342,11 @@ if __name__=="__main__":
                 print("Turno jugador 1")
                 op=opciones(tablero)
                 while not op:
-#                     print("Descartamos la "+tablero.pentominos[0])
+                    print("Descartamos la "+tablero.pentominos[0])
+                    pulsadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
+                    panel_letras(pulsadas)
                 ficha_colocada,replay,out=colocar_letra(tablero,op)
                 
                 pulsadas.append(ficha_colocada.letra)
@@ -354,53 +357,72 @@ if __name__=="__main__":
             else:
                 print("Turno jugador 2")
                 op=opciones(tablero)
+#                 print("Opciones "+str(op))
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
+                    pulsadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
+                    panel_letras(pulsadas)
                 
                 valida=False
+                cambio=False
                 
-                entrada=[]
-                aux=[0]*63
-                if not tablero.movimientos:
-                    state=0
-                    entrada.append(aux)
-                    
-                else:
-                    ultimo_movimiento=tablero.movimientos[-1][0]
-                    estado=tablero.fichas.index(ultimo_movimiento)
-                    print(estado)
-                    aux[estado]=1
-                    print(aux)
-                    entrada.append(aux)
-                print(entrada)
-                solucion=red.sim(entrada)
-                state,action=get_max(entrada[0],solucion[0])
-#                 action+=1
-                print("Estado, accion: ("+str(state)+", "+str(action)+")")
-                
-                pent = tablero.fichas[action]#Comprobar que entra, si no entra, elegimos otro de los m�ximos
-                print("Ficha: "+str(pent))
-                pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
-                
-                x,y=tablero.comprobar_pentomino(pentomino)
-                    
-                if x==-1:
-                    print("No es valida")
-                else:
-                    print("Es valida")
-                    valida=True
+                while not cambio:
+                    entrada=[] 
+                    aux=[0]*63
+                    if not tablero.movimientos:
+                        state=0
+                        entrada.append(aux)
                         
-                tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
-                teclas_escR()
-                pulsadas.append(pentomino.letra)
-                tablero.buscar_huecos(TURNOS[-1])
-                print(tablero)
-                board(tablero)
-                TURNOS.append(1)
-                pygame.display.update()
+                    else:
+                        ultimo_movimiento=tablero.movimientos[-1][0]
+                        estado=tablero.fichas.index(ultimo_movimiento)
+                        print(estado)
+                        aux[estado]=1
+                        print(aux)
+                        entrada.append(aux)
+                    print(entrada)
+                    solucion=red.sim(entrada)
+                    
+                    old_action=-1
+                    while not valida:
+                        state,action=get_max(entrada[0],solucion[0])
+        #                 action+=1
+                        print("Estado, accion: ("+str(state)+", "+str(action)+")")
+                        
+                        pent = tablero.fichas[action]#Comprobar que entra, si no entra, elegimos otro de los m�ximos
+                        print("Ficha: "+str(pent))
+                        pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
+                        
+                        x,y=tablero.comprobar_pentomino(pentomino)
+                            
+                        if x==-1:
+                            print("No es valida")
+                            solucion[0][action]=-1000
+                            if old_action==action:
+                                valido=True
+                                pulsadas.append(tablero.pentominos[0])
+                                tablero.pentominos.pop(0)
+#                                 op=opciones(tablero)
+                                panel_letras(pulsadas)
+                            else:
+                                old_action=action
+                        else:
+                            print("Es valida")
+                            valida=True
+                            cambio=True    
+                                
+                        tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
+                        teclas_escR()
+                        pulsadas.append(pentomino.letra)
+                        tablero.buscar_huecos(TURNOS[-1])
+                        print(tablero)
+                        board(tablero)
+                        TURNOS.append(1)
+                        pygame.display.update()
         elif i==-1:
+            panel_letras(pulsadas)
             win(p1,p2)
             pr=parar_reiniciar()
             if pr=="Replay":

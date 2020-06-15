@@ -341,10 +341,10 @@ if __name__=="__main__":
                 op=opciones(tablero)
                 while not op:
 #                     print("Descartamos la "+tablero.pentominos[0])
+                    pulsadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                 ficha_colocada,replay,out=colocar_letra(tablero,op)
-                
                 pulsadas.append(ficha_colocada.letra)
                 TURNOS.append(2)
                 pygame.display.update()
@@ -355,6 +355,7 @@ if __name__=="__main__":
                 op=opciones(tablero)
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
+                    pulsadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                 
@@ -400,6 +401,7 @@ if __name__=="__main__":
                 TURNOS.append(1)
                 pygame.display.update()
         elif i==-1:
+            panel_letras(pulsadas)
             win(p1,p2)
             pr=parar_reiniciar()
             if pr=="Replay":
