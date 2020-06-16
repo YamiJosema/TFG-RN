@@ -148,22 +148,22 @@ def get_pentominos():
     return Pentominos
 
 
-def get_max(prueba, solucion):
+def get_max(siguiente_letra, solucion):
     rangos = rango_por_letra(Formas)
-    pentominos = cargar_pentominos(Formas)
-    letras=np.array(Formas)
-    if np.count_nonzero(prueba)==0:
-        print("Tablero esta vacio")
-        state=[0,0]
-        letra=''
-        siguiente_letra='F'
-    else:
-        state = max([(prueba[i],i) for i in range(63)])
-        letra=pentominos[state[1]][0]
-        siguiente_letra=Formas[np.where(letras==letra)[0][0]+1]
-        print("Tablero no esta vacio, el estado es: "+str(state))
-
-    print("Letra "+letra)
+#     pentominos = cargar_pentominos(Formas)
+#     letras=np.array(Formas)
+#     if np.count_nonzero(prueba)==0:
+#         print("Tablero esta vacio")
+#         state=[0,0]
+#         letra=''
+#         siguiente_letra='F'
+#     else:
+#         state = max([(prueba[i],i) for i in range(63)])
+#         letra=pentominos[state[1]][0]
+#         siguiente_letra=Formas[np.where(letras==letra)[0][0]+1]
+#         print("Tablero no esta vacio, el estado es: "+str(state))
+# 
+#     print("Letra "+letra)
     print("Siguiente letra "+str(siguiente_letra))
     
     zona=rangos[siguiente_letra]
@@ -181,7 +181,7 @@ def get_max(prueba, solucion):
 #     print("Siguiente_letra: "+str(siguiente_letra))
 #     print("Mejor movimiento: "+str(action))
     
-    return state[1], action
+    return action
             
             
 def crear_conjunto_entrenamiento(): #Darle solo los valores maximos, las que son mas prometedoras
@@ -340,10 +340,10 @@ if __name__=="__main__":
 #     print("Prueba")
 #     print(prueba)
     
-    solucion, prueba=red_neuronal()
-    for s in range(len(solucion)):
-        print(" ")
-        print("Estado, Accion: "+str(get_max(prueba[s],solucion[s])))
+#     solucion, prueba=red_neuronal()
+#     for s in range(len(solucion)):
+#         print(" ")
+#         print("Estado, Accion: "+str(get_max(prueba[s],solucion[s])))
     
 #     inicio(8,8,2)
 #     introduciendo_letras(1000)

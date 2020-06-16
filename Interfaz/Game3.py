@@ -364,63 +364,61 @@ if __name__=="__main__":
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                     panel_letras(pulsadas)
+                    print(tablero.pentominos)
                 
                 valida=False
-                cambio=False
                 
-                while not cambio:
-                    entrada=[] 
-                    aux=[0]*63
-                    if not tablero.movimientos:
-                        state=0
-                        entrada.append(aux)
-                        
-                    else:
-                        ultimo_movimiento=tablero.movimientos[-1][0]
-                        estado=tablero.fichas.index(ultimo_movimiento)
-                        print(estado)
-                        aux[estado]=1
-                        print(aux)
-                        entrada.append(aux)
-                    print(entrada)
-                    solucion=red.sim(entrada)
+                
+                entrada=[] 
+                aux=[0]*63
+                if not tablero.movimientos:
+                    estado=0
+                    entrada.append(aux)
                     
-                    old_action=-1
-                    while not valida:
-                        state,action=get_max(entrada[0],solucion[0])
-        #                 action+=1
-                        print("Estado, accion: ("+str(state)+", "+str(action)+")")
+                else:
+                    ultimo_movimiento=tablero.movimientos[-1][0]
+                    estado=tablero.fichas.index(ultimo_movimiento)
+                    print(estado)
+                    aux[estado]=1
+                    entrada.append(aux)
+                print(entrada)
+                solucion=red.sim(entrada)
+                
+                old_action=-1
+                while not valida:
+                    action=get_max(tablero.pentominos[0],solucion[0])
+    #                 action+=1
+                    print("Estado, accion: ("+str(estado)+", "+str(action)+")")
+                    
+                    pent = tablero.fichas[action]#Comprobar que entra, si no entra, elegimos otro de los m�ximos
+                    print("Ficha: "+str(pent))
+                    pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
+                    
+                    x,y=tablero.comprobar_pentomino(pentomino)
                         
-                        pent = tablero.fichas[action]#Comprobar que entra, si no entra, elegimos otro de los m�ximos
-                        print("Ficha: "+str(pent))
-                        pentomino=Pentomino(pent[0],int(pent[1]),int(pent[2]))
-                        
-                        x,y=tablero.comprobar_pentomino(pentomino)
-                            
-                        if x==-1:
-                            print("No es valida")
-                            solucion[0][action]=-1000
-                            if old_action==action:
-                                valido=True
-                                pulsadas.append(tablero.pentominos[0])
-                                tablero.pentominos.pop(0)
+                    if x==-1:
+                        print("No es valida")
+                        print("(Acation, OldAction) ("+str(action)+", "+str(old_action)+")")
+                        if old_action==action:
+                            pulsadas.append(tablero.pentominos[0])
+                            tablero.pentominos.pop(0)
 #                                 op=opciones(tablero)
-                                panel_letras(pulsadas)
-                            else:
-                                old_action=action
+                            panel_letras(pulsadas)
                         else:
-                            print("Es valida")
-                            valida=True
-                            cambio=True    
-                                
-                        tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
-                        teclas_escR()
-                        pulsadas.append(pentomino.letra)
-                        tablero.buscar_huecos(TURNOS[-1])
-                        print(tablero)
-                        board(tablero)
-                        TURNOS.append(1)
-                        pygame.display.update()
+                            solucion[0][action+1]=0
+                            old_action=action
+                    else:
+                        print("Es valida")
+                        valida=True
+                            
+                tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
+                teclas_escR()
+                pulsadas.append(pentomino.letra)
+                tablero.buscar_huecos(TURNOS[-1])
+                print(tablero)
+                board(tablero)
+                TURNOS.append(1)
+                pygame.display.update()
         elif i==-1:
             panel_letras(pulsadas)
             win(p1,p2)
