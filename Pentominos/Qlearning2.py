@@ -59,7 +59,7 @@ def qlearning2(tablero, epochs=15000, gamma=0.4, epsilon=0.9, decay=0.005, limit
     
                 if done or not tablero.pentominos:
                     faltantes=len(tablero.pentominos)+len(no_colocadas)
-                    qtable[state,action]=100-10*faltantes
+                    qtable[state,action]=100-10*faltantes #TODO penalty+100-10*faltantes
                     if faltantes<=1:
                         epsilon -= decay*epsilon
                 else: 

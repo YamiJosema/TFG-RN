@@ -58,18 +58,18 @@ def load_letras():
     x=pygame.image.load('images/botonX.png')
     y=pygame.image.load('images/botonY.png')
     z=pygame.image.load('images/botonZ.png')
-    fpush=pygame.image.load('images/pushF.png')
-    ipush=pygame.image.load('images/pushI.png')
-    lpush=pygame.image.load('images/pushL.png')
-    npush=pygame.image.load('images/pushN.png')
-    ppush=pygame.image.load('images/pushP.png')
-    tpush=pygame.image.load('images/pushT.png')
-    upush=pygame.image.load('images/pushU.png')
-    vpush=pygame.image.load('images/pushV.png')
-    wpush=pygame.image.load('images/pushW.png')
-    xpush=pygame.image.load('images/pushX.png')
-    ypush=pygame.image.load('images/pushY.png')
-    zpush=pygame.image.load('images/pushZ.png')
+    fnot=pygame.image.load('images/notF.png')
+    inot=pygame.image.load('images/notI.png')
+    lnot=pygame.image.load('images/notL.png')
+    nnot=pygame.image.load('images/notN.png')
+    pnot=pygame.image.load('images/notP.png')
+    tnot=pygame.image.load('images/notT.png')
+    unot=pygame.image.load('images/notU.png')
+    vnot=pygame.image.load('images/notV.png')
+    wnot=pygame.image.load('images/notW.png')
+    xnot=pygame.image.load('images/notX.png')
+    ynot=pygame.image.load('images/notY.png')
+    znot=pygame.image.load('images/notZ.png')
     foff=pygame.image.load('images/offF.png')
     ioff=pygame.image.load('images/offI.png')
     loff=pygame.image.load('images/offL.png')
@@ -84,22 +84,24 @@ def load_letras():
     zoff=pygame.image.load('images/offZ.png')
     
     letters=[('F',f),('I',i),('L',l),('N',n),('P',p),('T',t),('U',u),('V',v),('W',w),('X',x),('Y',y),('Z',z)]
-    hoverl=[fpush,ipush,lpush,npush,ppush,tpush,upush,vpush,wpush,xpush,ypush,zpush]
+    notl=[fnot,inot,lnot,nnot,pnot,tnot,unot,vnot,wnot,xnot,ynot,znot]
     offl =[foff,ioff,loff,noff,poff,toff,uoff,voff,woff,xoff,yoff,zoff]
     
-    return letters, hoverl, offl
+    return letters, notl, offl
 
 
-def panel_letras(pulsadas, gameDisplay):
-    letters,_,offl = load_letras()
+def panel_letras(pulsadas,descartadas, gameDisplay):
+    letters,notl,offl = load_letras()
     x=540
     y=25
     column=0
     for letra in range(len(letters)):
-        if letters[letra][0] not in pulsadas:
-            gameDisplay.blit(letters[letra][1],(x,y))
-        elif letters[letra][0] in pulsadas:
+        if letters[letra][0] in pulsadas:
             gameDisplay.blit(offl[letra],(x,y))
+        elif letters[letra][0] in descartadas:
+            gameDisplay.blit(notl[letra],(x,y))
+        else:
+            gameDisplay.blit(letters[letra][1],(x,y))
         if column != 3:
             x=x+160
             column+=1
@@ -214,14 +216,18 @@ def get_puntuacion(tablero):
 
 
 def win(p1,p2,gameDisplay):
-    corona=pygame.image.load('images/corona.png')
-    corona = pygame.transform.scale(corona, (50, 40))
-    if p1>p2:
-        gameDisplay.blit(corona,(display_width*0.06, display_height*0.81))
-    elif p2>p1:
-        gameDisplay.blit(corona,(display_width*0.66, display_height*0.81))
+    if p1!=p2:
+        corona=pygame.image.load('images/corona.png')
+        corona = pygame.transform.scale(corona, (70, 70))
+        if p1>p2:
+            gameDisplay.blit(corona,(display_width*0.04, display_height*0.79))
+        elif p2>p1:
+            gameDisplay.blit(corona,(display_width*0.64, display_height*0.79))
     elif p1==p2:
-        pass
+        empate=pygame.image.load('images/empate.png')
+        empate = pygame.transform.scale(empate, (80,51))
+        gameDisplay.blit(empate,(display_width*0.03, display_height*0.81))
+        gameDisplay.blit(empate,(display_width*0.63, display_height*0.81))
     
 
 def teclas_escR(gameDisplay):
@@ -248,6 +254,7 @@ def parar_reiniciar():
 def game2(gameDisplay):
     
     pulsadas=[]
+    descartadas=[]
     
     turno = random.randint(1,2)
     TURNOS.append(random.randint(1,2))
@@ -279,13 +286,13 @@ def game2(gameDisplay):
             if event.type is pygame.QUIT:
                 out = True
         if i!=-1:
-            panel_letras(pulsadas, gameDisplay)
+            panel_letras(pulsadas,descartadas, gameDisplay)
             if TURNOS[-1]==1:
                 print("Turno jugador 1")
                 op=opciones(tablero)
                 while not op:
 #                     print("Descartamos la "+tablero.pentominos[0])
-                    pulsadas.append(tablero.pentominos[0])
+                    descartadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                 ficha_colocada,replay,out=colocar_letra(tablero,op,gameDisplay)
@@ -299,7 +306,7 @@ def game2(gameDisplay):
                 op=opciones(tablero)
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
-                    pulsadas.append(tablero.pentominos[0])
+                    descartadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                 
@@ -345,7 +352,7 @@ def game2(gameDisplay):
                 TURNOS.append(1)
                 pygame.display.update()
         elif i==-1:
-            panel_letras(pulsadas, gameDisplay)
+            panel_letras(pulsadas,descartadas, gameDisplay)
             win(p1,p2,gameDisplay)
             teclas_escR(gameDisplay)
             pr=parar_reiniciar()
@@ -374,6 +381,7 @@ def game2(gameDisplay):
 
 def game3(gameDisplay):
     pulsadas=[]
+    descartadas=[]
     
     turno = random.randint(1,2)
     TURNOS.append(random.randint(1,2))
@@ -406,16 +414,16 @@ def game3(gameDisplay):
             if event.type is pygame.QUIT:
                 out = True
         if i!=-1:
-            panel_letras(pulsadas, gameDisplay)
+            panel_letras(pulsadas,descartadas, gameDisplay)
             if TURNOS[-1]==1:
                 print("Turno jugador 1")
                 op=opciones(tablero)
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
-                    pulsadas.append(tablero.pentominos[0])
+                    descartadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
-                    panel_letras(pulsadas, gameDisplay)
+                    panel_letras(pulsadas,descartadas, gameDisplay)
                 ficha_colocada,replay,out=colocar_letra(tablero,op, gameDisplay)
                 
                 pulsadas.append(ficha_colocada.letra)
@@ -429,10 +437,10 @@ def game3(gameDisplay):
 #                 print("Opciones "+str(op))
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
-                    pulsadas.append(tablero.pentominos[0])
+                    descartadas.append(tablero.pentominos[0])
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
-                    panel_letras(pulsadas, gameDisplay)
+                    panel_letras(pulsadas,descartadas, gameDisplay)
                     print(tablero.pentominos)
                 
                 valida=False
@@ -469,10 +477,10 @@ def game3(gameDisplay):
                         print("No es valida")
                         print("(Acation, OldAction) ("+str(action)+", "+str(old_action)+")")
                         if old_action==action:
-                            pulsadas.append(tablero.pentominos[0])
+                            descartadas.append(tablero.pentominos[0])
                             tablero.pentominos.pop(0)
 #                                 op=opciones(tablero)
-                            panel_letras(pulsadas)
+                            panel_letras(pulsadas,descartadas,gameDisplay)
                         else:
                             solucion[0][action+1]=0
                             old_action=action
@@ -489,7 +497,7 @@ def game3(gameDisplay):
                 TURNOS.append(1)
                 pygame.display.update()
         elif i==-1:
-            panel_letras(pulsadas, gameDisplay)
+            panel_letras(pulsadas,descartadas, gameDisplay)
             win(p1,p2, gameDisplay)
             teclas_escR(gameDisplay)
             pr=parar_reiniciar()
@@ -520,6 +528,8 @@ def inicio():
     pygame.init()
     gameDisplay = pygame.display.set_mode((display_width, display_height))
     pygame.display.set_caption('Menu Principal')
+    icon_surf = pygame.image.load('images/tetris.ico')
+    pygame.display.set_icon(icon_surf)
     
     gameDisplay.fill(BLACK)
     
