@@ -256,8 +256,8 @@ def game2(gameDisplay):
     pulsadas=[]
     descartadas=[]
     
-    turno = random.randint(1,2)
-    TURNOS.append(random.randint(1,2))
+    turno=piedra_papel_tijeras(gameDisplay)
+    TURNOS.append(turno)
     
     pygame.display.set_caption('Aprendizaje Automático')
     clock = pygame.time.Clock()
@@ -383,8 +383,8 @@ def game3(gameDisplay):
     pulsadas=[]
     descartadas=[]
     
-    turno = random.randint(1,2)
-    TURNOS.append(random.randint(1,2))
+    turno=piedra_papel_tijeras(gameDisplay)
+    TURNOS.append(turno)
     
     pygame.display.set_caption('Redes Neuronales')
     clock = pygame.time.Clock()
@@ -522,7 +522,196 @@ def game3(gameDisplay):
         
 #     print(tablero)
 #     print(tablero.movimientos)
+
+
+def game4(gameDisplay):
+    pulsadas=[]
+    descartadas=[]
     
+#     turno = random.randint(1,2)
+#     TURNOS.append(random.randint(1,2))
+    
+    pygame.display.set_caption('Redes Neuronales')
+    clock = pygame.time.Clock()
+    gameDisplay.fill(BLACK)
+    
+    turno=piedra_papel_tijeras(gameDisplay)
+    TURNOS.append(turno)
+    
+    tablero = Tablero(8,8, FORMAS)
+    board(tablero, gameDisplay)
+    
+    out = False
+    replay=False
+    
+    p1,p2=0,0
+    print("COMIENZA EL JUEGO")
+    
+    while not out:
+        
+        i,_=tablero.siguiente_zero()
+        p1, p2 = get_puntuacion(tablero)
+        pygame.draw.rect(gameDisplay,BLACK,[0, display_height*0.85-60,display_width,100])
+        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, WHITE, gameDisplay)
+        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, WHITE, gameDisplay)
+        
+        for event in pygame.event.get():
+            if event.type is pygame.QUIT:
+                out = True
+        if i!=-1:
+            panel_letras(pulsadas,descartadas, gameDisplay)
+            if TURNOS[-1]==1:
+                print("Turno jugador 1")
+                op=opciones(tablero)
+                while not op:
+                    print("Descartamos la "+tablero.pentominos[0])
+                    descartadas.append(tablero.pentominos[0])
+                    tablero.pentominos.pop(0)
+                    op=opciones(tablero)
+                    panel_letras(pulsadas,descartadas, gameDisplay)
+                ficha_colocada,replay,out=colocar_letra(tablero,op, gameDisplay)
+                
+                pulsadas.append(ficha_colocada.letra)
+                TURNOS.append(2)
+                pygame.display.update()
+#                 print("Ficha: "+str(tablero.movimientos[-1][0]))
+                print(tablero)
+            else:
+                print("Turno jugador 2")
+                op=opciones(tablero)
+                while not op:
+                    print("Descartamos la "+tablero.pentominos[0])
+                    descartadas.append(tablero.pentominos[0])
+                    tablero.pentominos.pop(0)
+                    op=opciones(tablero)
+                    panel_letras(pulsadas,descartadas, gameDisplay)
+                ficha_colocada,replay,out=colocar_letra(tablero,op, gameDisplay)
+                
+                pulsadas.append(ficha_colocada.letra)
+                TURNOS.append(1)
+                pygame.display.update()
+#                 print("Ficha: "+str(tablero.movimientos[-1][0]))
+                print(tablero)
+        elif i==-1:
+            panel_letras(pulsadas,descartadas, gameDisplay)
+            win(p1,p2, gameDisplay)
+            teclas_escR(gameDisplay)
+            pr=parar_reiniciar()
+            if pr=="Replay":
+                tablero=Tablero(8,8,FORMAS)
+                pulsadas=[]
+                board(tablero, gameDisplay)
+                turno = random.randint(1,2)
+                TURNOS.append(turno)
+            elif pr=="Stop":
+                out=True
+        if replay:
+            replay=False
+            tablero=Tablero(8,8,FORMAS)
+            pulsadas=[]
+            board(tablero, gameDisplay)
+            turno = random.randint(1,2)
+            TURNOS.append(turno)
+        pygame.display.update()
+        
+        clock.tick(30)
+
+
+def piedra_papel_tijeras(gameDisplay):
+    gameDisplay.fill(BLACK)
+    display_text("¿Quien juega primero?",display_width*0.50, display_height*0.05, 50, WHITE,gameDisplay)
+    display_text("Piedra, Pepel o Tijeras",display_width*0.50, display_height*0.15, 60, WHITE,gameDisplay)
+    
+    piedra=pygame.image.load('images/piedra.png')
+    papel=pygame.image.load('images/papel.png')
+    tijeras=pygame.image.load('images/tijeras.png')
+    piedra_hover=pygame.image.load('images/piedra_hover.png')
+    papel_hover=pygame.image.load('images/papel_hover.png')
+    tijeras_hover=pygame.image.load('images/tijeras_hover.png')
+    
+    piedra = pygame.transform.scale(piedra, (250, 250))
+    papel = pygame.transform.scale(papel, (250, 250))
+    tijeras = pygame.transform.scale(tijeras, (250, 250))
+    piedra_hover = pygame.transform.scale(piedra_hover, (250, 250))
+    papel_hover = pygame.transform.scale(papel_hover, (250, 250))
+    tijeras_hover = pygame.transform.scale(tijeras_hover, (250, 250))
+    
+    corona=pygame.image.load('images/corona.png')
+    corona = pygame.transform.scale(corona, (70, 70))
+    
+    ppt={1:piedra,2:papel,3:tijeras}
+    
+    pygame.display.update()
+    
+    out=False
+    eleccion=0
+    turno=0
+    
+    while not out:
+        gameDisplay.blit(piedra,(display_width*0.40, display_height*0.21))
+        gameDisplay.blit(papel,(display_width*0.25, display_height*0.61))
+        gameDisplay.blit(tijeras,(display_width*0.55, display_height*0.61))    
+        pos = pygame.mouse.get_pos()
+        if display_width*0.40+250>pos[0]>display_width*0.40 and display_height*0.21+250>pos[1]>display_height*0.21:
+            gameDisplay.blit(piedra_hover,(display_width*0.40, display_height*0.21))
+        if display_width*0.25+250>pos[0]>display_width*0.25 and display_height*0.61+250>pos[1]>display_height*0.61:
+            gameDisplay.blit(papel_hover,(display_width*0.25, display_height*0.61))
+        if display_width*0.55+250>pos[0]>display_width*0.55 and display_height*0.61+250>pos[1]>display_height*0.61:
+            gameDisplay.blit(tijeras_hover,(display_width*0.55, display_height*0.61))
+           
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN and eleccion==0:
+                pos = pygame.mouse.get_pos()
+                if display_width*0.40+250>pos[0]>display_width*0.40 and display_height*0.21+250>pos[1]>display_height*0.21:
+                    eleccion=1
+                elif display_width*0.25+250>pos[0]>display_width*0.25 and display_height*0.61+250>pos[1]>display_height*0.61:
+                    eleccion=2
+                elif display_width*0.55+250>pos[0]>display_width*0.55 and display_height*0.61+250>pos[1]>display_height*0.61:
+                    eleccion=3
+                if eleccion!=0:
+                    out=True    
+    
+    out=False
+    while not out:      
+        if turno==0:
+            p2 = random.randint(1,3)
+            if p2==eleccion:
+                turno=random.randint(1,2)
+            elif eleccion==1 and p2==3 or eleccion==3 and p2==2 or eleccion==2 and p2==1:
+                turno=1
+            else:
+                turno=2
+                
+            gameDisplay.fill(BLACK)
+            display_text("Resultado",display_width*0.50, display_height*0.15, 60, WHITE,gameDisplay)
+            display_text("Pulsa cualquier tecla para comenzar el juego",display_width*0.50, display_height*0.95, 30, WHITE,gameDisplay)
+            print(ppt)
+            gameDisplay.blit(ppt[eleccion],(display_width*0.25, display_height*0.31))
+            gameDisplay.blit(ppt[p2],(display_width*0.55, display_height*0.31))
+            if turno==1:
+                display_text("Comienza el jugador 1",display_width*0.50, display_height*0.85, 40, WHITE,gameDisplay)
+                xy=(display_width*0.25, display_height*0.30)
+            else:
+                display_text("Comienza el jugador 2",display_width*0.50, display_height*0.85, 40, WHITE,gameDisplay)
+                xy=(display_width*0.55, display_height*0.30)
+            gameDisplay.blit(corona,xy)
+            
+            if eleccion==p2:
+                display_text("Empate, el jugador ha sido elegido de forma aleatoria",display_width*0.50, display_height*0.75, 20, WHITE,gameDisplay)
+            
+                
+            pygame.display.update()
+            
+        for event in pygame.event.get():
+            if event.type is pygame.KEYDOWN:
+                out=True
+    
+    
+    
+    gameDisplay.fill(BLACK)
+    return turno
+                   
 
 def inicio():
     pygame.init()
@@ -569,6 +758,9 @@ if __name__=="__main__":
                     gameDisplay=inicio()
                 elif tecla== "a":
                     game2(gameDisplay)
+                    gameDisplay=inicio()
+                elif tecla== "q":
+                    game4(gameDisplay)
                     gameDisplay=inicio()
                 elif tecla=="escape":
                     out=True
