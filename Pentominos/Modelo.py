@@ -54,7 +54,7 @@ class Tablero:
         elif letra=="X":
             rotacion="0"
             inversa="0"
-        else: # letra=="I":
+        elif letra=="I":
             rotacion=str(random.randint(0,1))
             inversa="0"
             
@@ -98,10 +98,9 @@ class Tablero:
             next_state=state
         
         if next_state!=state:
+            reward=50
             if penalizacion>0:
-                reward=penalizacion*-10 #penalizacion por huecos
-            else:
-                reward=20
+                reward-=penalizacion*10 #penalizacion por huecos
         else:
             reward=-1000
             
@@ -279,8 +278,9 @@ class Tablero:
         return False
     
     
-    def colocar_pentomino_2p(self, pentomino, x, y, jugador):
+    def colocar_pentomino_2p(self, pentomino, x, y, jugador): #AQUI
 #         print("Colocar pentomino 2p")
+        
         colocado=True
         row=len(pentomino.modelo)
         cols=len(pentomino.modelo[0])

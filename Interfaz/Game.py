@@ -3,7 +3,7 @@ import pygame
 import numpy as np
 import random
 from Pentominos.Modelo import Tablero, Pentomino
-from Pentominos.Qlearning2 import qlearning2
+from Pentominos.Qlearning2 import qlearning2, get_key
 from Pentominos.Utilidades import rango_por_letra, posicion_real
 from Pentominos.Neuronales import red_neuronal, get_max
 
@@ -296,6 +296,9 @@ def game2(gameDisplay):
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                 ficha_colocada,replay,out=colocar_letra(tablero,op,gameDisplay)
+                aux_pent=[ficha_colocada.letra,str(ficha_colocada.rotacion),str(ficha_colocada.invertido)]
+                action=tablero.fichas.index(aux_pent)
+                tablero.piezas.append(action)
                 pulsadas.append(ficha_colocada.letra)
                 TURNOS.append(2)
                 pygame.display.update()
@@ -315,16 +318,25 @@ def game2(gameDisplay):
                     state=0
                 else:
                     ultimo_movimiento=tablero.movimientos[-1][0]
-                    state=tablero.fichas.index(ultimo_movimiento)
+                    state=tablero.fichas.index(ultimo_movimiento)+1
                 
                 rangos = rango_por_letra(FORMAS)
-                action_completo = np.copy(qtable[state])#qtable[state] #Acciones para el estado
-                print("Estado "+str(state))
-                action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
-                print("Rangos "+str(rangos))
-                zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
-                print("Zona "+str(zona))
-                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones #TODO revisar
+                key=get_key(tablero)
+                print("Piezas "+str(tablero.piezas))
+                action_completo = np.copy(qtable[state])
+                action_plano = np.squeeze(np.asarray(action_completo))
+                zona=rangos[tablero.pentominos[0]]
+                action_cortado_diccionario=action_plano[zona[0]:zona[1]+1]
+                print("Action Diccionario "+str(action_cortado_diccionario))
+                action_cortado=[]
+                for dic in action_cortado_diccionario:
+                    print("Key "+str(key))
+                    if key in dic:
+                        action_cortado.append(dic[key])
+                    else:
+                        action_cortado.append(0.0)
+                action_cortado=np.copy(action_cortado)
+                    
                 while not valida:
                     print("Zona "+str(action_cortado))
                     action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
@@ -333,6 +345,7 @@ def game2(gameDisplay):
                     action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
                     action=posicion_real(action_relativo, tablero.pentominos[0], FORMAS) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
                     action+=1
+                    
                     print("Ficha(numero) "+str(action))
                     pent = tablero.fichas[action-1]#Comprobar que entra, si no entra ponemos a -1000 esa posicion en la qtable y elegimos otro de los maximos
                     print("Ficha: "+str(pent))
@@ -346,7 +359,11 @@ def game2(gameDisplay):
                     else:
                         print("Es valida")
                         valida=True
+                        
                 tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
+                aux_pent=[pentomino.letra,str(pentomino.rotacion),str(pentomino.invertido)]
+                action=tablero.fichas.index(aux_pent)
+                tablero.piezas.append(action)
                 teclas_escR(gameDisplay)
                 pulsadas.append(pentomino.letra)
                 tablero.buscar_huecos(TURNOS[-1])
@@ -362,6 +379,7 @@ def game2(gameDisplay):
             if pr=="Replay":
                 tablero=Tablero(8,8,FORMAS)
                 pulsadas=[]
+                descartadas=[]
                 board(tablero,gameDisplay)
                 turno = random.randint(1,2)
                 TURNOS.append(turno)
@@ -728,7 +746,6 @@ def piedra_papel_tijeras(gameDisplay):
             gameDisplay.blit(logo,(10, 0))
             display_text("Resultado",display_width*0.50, display_height*0.15, 60, WHITE,gameDisplay)
             display_text("Pulsa cualquier tecla para comenzar el juego",display_width*0.50, display_height*0.95, 30, WHITE,gameDisplay)
-            print(ppt)
             gameDisplay.blit(ppt[eleccion],(display_width*0.25, display_height*0.31))
             gameDisplay.blit(ppt[p2],(display_width*0.55, display_height*0.31))
             if turno==1:

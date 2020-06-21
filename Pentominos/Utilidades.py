@@ -24,13 +24,13 @@ def crear_pentominos_csv(orden):
             if i=="X":
                 filewriter.writerow(["X",0,0])
             elif i=="I":
-                filewriter.writerow(["I",0, 0])
-                filewriter.writerow(["I",1, 0])
+                filewriter.writerow(["I",0,0])
+                filewriter.writerow(["I",1,0])
             elif i=="Z":
-                filewriter.writerow(["Z",0, 0])
-                filewriter.writerow(["Z",1, 0])
-                filewriter.writerow(["Z",0, 1])
-                filewriter.writerow(["Z",1, 1])
+                filewriter.writerow(["Z",0,0])
+                filewriter.writerow(["Z",1,0])
+                filewriter.writerow(["Z",0,1])
+                filewriter.writerow(["Z",1,1])
             else:
                 for j in range(4):
                     filewriter.writerow([i,j,0])
