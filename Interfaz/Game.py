@@ -531,7 +531,7 @@ def game4(gameDisplay):
 #     turno = random.randint(1,2)
 #     TURNOS.append(random.randint(1,2))
     
-    pygame.display.set_caption('Redes Neuronales')
+    pygame.display.set_caption('Dos Jugadores')
     clock = pygame.time.Clock()
     gameDisplay.fill(BLACK)
     
@@ -725,14 +725,18 @@ def inicio():
     logo=pygame.image.load('images/logo.png')
     gameDisplay.blit(logo,(30,40))
     
-    display_text("Redes Neuronales",display_width*0.47, display_height*0.76, 35, WHITE,gameDisplay)
-    display_text("Aprendizaje Automático",display_width*0.50, display_height*0.56, 35, WHITE,gameDisplay)
+    display_text("Redes Neuronales",display_width*0.27, display_height*0.76, 35, WHITE,gameDisplay)
+    display_text("Aprendizaje Automático",display_width*0.30, display_height*0.56, 35, WHITE,gameDisplay)
+    display_text("Dos Jugadores",display_width*0.70, display_height*0.65, 35, WHITE,gameDisplay)
     tecla_a=pygame.image.load('images/tecla_a.png')
     tecla_r=pygame.image.load('images/tecla_r.png')
+    tecla_q=pygame.image.load('images/tecla_q.png')
     tecla_r = pygame.transform.scale(tecla_r, (80, 80))
-    gameDisplay.blit(tecla_r,(display_width*0.30, display_height*0.70))
+    gameDisplay.blit(tecla_r,(display_width*0.10, display_height*0.70))
     tecla_a = pygame.transform.scale(tecla_a, (80, 80))
-    gameDisplay.blit(tecla_a,(display_width*0.30, display_height*0.50))
+    gameDisplay.blit(tecla_a,(display_width*0.10, display_height*0.50))
+    tecla_q = pygame.transform.scale(tecla_q, (80, 80))
+    gameDisplay.blit(tecla_q,(display_width*0.55, display_height*0.59))
     
     display_text("Salir",display_width*0.87, display_height*0.90, 25, WHITE,gameDisplay)
     esc=pygame.image.load('images/tecla_esc.png')
