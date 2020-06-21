@@ -8,7 +8,7 @@ from Pentominos.Utilidades import cargar_pentominos, rango_por_letra, posicion_r
 from numpy import float32
 
 
-def qlearning2(tablero, epochs=30000, gamma=0.4, epsilon=0.9, decay=0.01, limit=200):
+def qlearning2(tablero, epochs=15000, gamma=0.4, epsilon=0.9, decay=0.005, limit=200):
     if os.path.isfile('../Pentominos/learning/alfabetico.txt')==True:
         print("Fichero qlearning encontrado")
         qtable = np.loadtxt('../Pentominos/learning/alfabetico.txt', dtype=float32)
@@ -40,14 +40,17 @@ def qlearning2(tablero, epochs=30000, gamma=0.4, epsilon=0.9, decay=0.01, limit=
                 action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones
                     
                 if np.random.uniform() < epsilon:
-                    action=tablero.ficha_aleatoria() #Usamos colocar random para poner una ficha aleatoria
-                else:
                     if np.count_nonzero(action_cortado)!=len(action_cortado):
-                        action_tratado = np.where(action_cortado==np.amin(action_cortado)) #cogemos los indices que tengan el valor maximo
+                        action_minimo = np.where(action_cortado==0) #cogemos los indices que tengan el valor maximo
+                        rand = random.randint(0,len(action_minimo[0])-1)
+                        action_relativo = action_minimo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
+                        action=posicion_real(action_relativo, tablero.pentominos[0], orden)
                     else:
-                        action_tratado = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
-                    rand = random.randint(0,len(action_tratado[0])-1)
-                    action_relativo = action_tratado[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
+                        action=tablero.ficha_aleatoria() #Usamos colocar random para poner una ficha aleatoria
+                else:
+                    action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
+                    rand = random.randint(0,len(action_maximo[0])-1)
+                    action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
                     action=posicion_real(action_relativo, tablero.pentominos[0], orden) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
      
                 action+=1 #Sumamos uno para contar en la tabla el hueco para la posicion 0
@@ -56,7 +59,7 @@ def qlearning2(tablero, epochs=30000, gamma=0.4, epsilon=0.9, decay=0.01, limit=
     
                 if done or not tablero.pentominos:
                     faltantes=len(tablero.pentominos)+len(no_colocadas)
-                    qtable[state,action]=100-10*faltantes
+                    qtable[state,action]=100-10*faltantes #TODO penalty+100-10*faltantes
                     if faltantes<=1:
                         epsilon -= decay*epsilon
                 else: 
