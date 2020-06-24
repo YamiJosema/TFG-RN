@@ -8,10 +8,15 @@ from Pentominos.Utilidades import cargar_pentominos, rango_por_letra, posicion_r
 from numpy import float32
 
 
-def qlearning2(tablero, epochs=40000, gamma=0.4, epsilon=0.95, decay=0.001, limit=200):
-    if os.path.isfile('../Pentominos/learning/alfabetico.txt')==True:
+def qlearning2(tablero, modo=0, epochs=40000, gamma=0.4, epsilon=0.95, decay=0.001, limit=200):
+    fichero='../Pentominos/learning/alfabetico.txt'
+    if modo==2:
+        fichero='../Pentominos/learning/esquinas.txt'
+    elif modo==3:
+        fichero='../Pentominos/learning/centro.txt'
+    if os.path.isfile(fichero)==True:
         qtable=[[{} for i in range(64)] for _ in range(64)]
-        with open("../Pentominos/learning/alfabetico.txt") as file:
+        with open(fichero) as file:
             i=0
             for line in file: 
                 split1=line.split("}]")
@@ -34,6 +39,7 @@ def qlearning2(tablero, epochs=40000, gamma=0.4, epsilon=0.95, decay=0.001, limi
 #         qtable = np.loadtxt('../Pentominos/learning/alfabetico.txt', dtype=float32)
     else:
         print("Fichero no encontrado, pasamos a hacer el proceso de aprendizaje, esto llevara unos segundos")
+        modo_aux=modo
         orden = tablero.pentominos
         pentominos = cargar_pentominos(orden)
         no_colocadas=[]
@@ -42,7 +48,7 @@ def qlearning2(tablero, epochs=40000, gamma=0.4, epsilon=0.95, decay=0.001, limi
         qtable=[[{} for i in range(len(pentominos)+1)] for _ in range(len(pentominos)+1)]
         
         for i in range(epochs):
-            state, penalty, done = tablero.reset(orden)
+            state, penalty, done = tablero.reset(orden,modo)
             steps = 0
             
             no_colocadas=[]
@@ -89,8 +95,12 @@ def qlearning2(tablero, epochs=40000, gamma=0.4, epsilon=0.95, decay=0.001, limi
                     faltantes=len(tablero.pentominos)+len(no_colocadas)
                     
                     qtable[state][action].update({key:50+penalty-10*faltantes})
-                    if faltantes<=1:
-                        epsilon -= decay*epsilon
+                    if faltantes<=modo:
+                        if modo_aux==0:
+                            epsilon -= decay*epsilon
+                            modo_aux=modo
+                        else:
+                            modo_aux-=1
                     
                 else: 
                     if penalty==-1000:
@@ -131,7 +141,7 @@ def qlearning2(tablero, epochs=40000, gamma=0.4, epsilon=0.95, decay=0.001, limi
             print(tablero.piezas)
             print("Epsilon "+str(epsilon))
             print("\nDone in", steps, "steps".format(steps))
-        with open('../Pentominos/learning/alfabetico.txt', 'w') as f:
+        with open(fichero,'w+') as f:
             for item in qtable:
                 f.write(str(item))
                 f.write("\n")
