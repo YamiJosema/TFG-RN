@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+@author: Jose Manuel Pallero Hidalgo
+'''
 import numpy as np
 from Pentominos.Formas import modelo
 from Pentominos.Utilidades import cargar_pentominos

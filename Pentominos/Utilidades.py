@@ -1,3 +1,6 @@
+'''
+@author: Jose Manuel Pallero Hidalgo
+'''
 import os
 import csv
 

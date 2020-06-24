@@ -1,3 +1,7 @@
+'''
+@author: Jose Manuel Pallero Hidalgo
+'''
+
 import numpy as np
 
 
