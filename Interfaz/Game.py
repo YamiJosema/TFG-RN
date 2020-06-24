@@ -3,7 +3,7 @@ import pygame
 import numpy as np
 import random
 from Pentominos.Modelo import Tablero, Pentomino
-from Pentominos.Qlearning2 import qlearning2
+from Pentominos.Qlearning2 import qlearning2, get_key
 from Pentominos.Utilidades import rango_por_letra, posicion_real
 from Pentominos.Neuronales import red_neuronal, get_max
 
@@ -32,6 +32,8 @@ def board(tablero,gameDisplay):
                 cuadrado(i, j,ROJO,gameDisplay)
             elif tablero.board[i][j]==2:
                 cuadrado(i, j, AZUL,gameDisplay)
+            elif tablero.board[i][j]==3:
+                cuadrado(i, j, BLACK,gameDisplay)
             else:
                 cuadrado(i, j, GRIS,gameDisplay)
                     
@@ -248,15 +250,16 @@ def parar_reiniciar():
                     return "Replay"
 
     
-def game2(gameDisplay):
+def game2(gameDisplay,modo):
     
     pulsadas=[]
     descartadas=[]
     
+    pygame.display.set_caption('Q-Learning')
+    
     turno=piedra_papel_tijeras(gameDisplay)
     TURNOS.append(turno)
     
-    pygame.display.set_caption('Aprendizaje Automático')
     clock = pygame.time.Clock()
     
     gameDisplay.fill(BLACK)
@@ -264,9 +267,12 @@ def game2(gameDisplay):
     logo = pygame.transform.scale(logo, (250, 57))
     gameDisplay.blit(logo,(10, 0))
     tablero = Tablero(8,8, FORMAS)
-    board(tablero,gameDisplay)
+    tablero.seleccion_modo(modo)
     
-    qtable = qlearning2(tablero.copy())
+    qtable = qlearning2(tablero.copy(),modo)
+    
+    tablero.seleccion_modo_real()
+    board(tablero,gameDisplay)
 
     out = False
     replay=False
@@ -296,6 +302,9 @@ def game2(gameDisplay):
                     tablero.pentominos.pop(0)
                     op=opciones(tablero)
                 ficha_colocada,replay,out=colocar_letra(tablero,op,gameDisplay)
+                aux_pent=[ficha_colocada.letra,str(ficha_colocada.rotacion),str(ficha_colocada.invertido)]
+                action=tablero.fichas.index(aux_pent)
+                tablero.piezas.append(action)
                 pulsadas.append(ficha_colocada.letra)
                 TURNOS.append(2)
                 pygame.display.update()
@@ -315,24 +324,34 @@ def game2(gameDisplay):
                     state=0
                 else:
                     ultimo_movimiento=tablero.movimientos[-1][0]
-                    state=tablero.fichas.index(ultimo_movimiento)
+                    state=tablero.fichas.index(ultimo_movimiento)+1
                 
                 rangos = rango_por_letra(FORMAS)
-                action_completo = np.copy(qtable[state])#qtable[state] #Acciones para el estado
-                print("Estado "+str(state))
-                action_plano = np.squeeze(np.asarray(action_completo)) #Convertimos en array "aplaanamos"
-                print("Rangos "+str(rangos))
-                zona=rangos[tablero.pentominos[0]] #rango que nos indica las acciones siguientes permitidas
-                print("Zona "+str(zona))
-                action_cortado=action_plano[zona[0]:zona[1]+1] #cortamos el array para quedarnos solo con la zona de siguietes acciones #TODO revisar
+                key=get_key(tablero)
+#                 print("Piezas "+str(tablero.piezas))
+                action_completo = np.copy(qtable[state])
+                action_plano = np.squeeze(np.asarray(action_completo))
+                zona=rangos[tablero.pentominos[0]]
+                action_cortado_diccionario=action_plano[zona[0]:zona[1]+1]
+#                 print("Action Diccionario "+str(action_cortado_diccionario))
+                action_cortado=[]
+                for dic in action_cortado_diccionario:
+#                     print("Key "+str(key))
+                    if key in dic:
+                        action_cortado.append(dic[key])
+                    else:
+                        action_cortado.append(0.0)
+                action_cortado=np.copy(action_cortado)
+                    
                 while not valida:
-                    print("Zona "+str(action_cortado))
+#                     print("Zona "+str(action_cortado))
                     action_maximo = np.where(action_cortado==np.amax(action_cortado)) #cogemos los indices que tengan el valor maximo
-                    print("Maximos "+str(action_maximo))
+#                     print("Maximos "+str(action_maximo))
                     rand = random.randint(0,len(action_maximo[0])-1)
                     action_relativo = action_maximo[0][rand] #nos quedamos con el primero ya que todos serian iguales (se podria aleatorizar con epsilon)
                     action=posicion_real(action_relativo, tablero.pentominos[0], FORMAS) #obtenemos el indice real ya que le anterior era el indice ralivo al array cortado
                     action+=1
+                    
                     print("Ficha(numero) "+str(action))
                     pent = tablero.fichas[action-1]#Comprobar que entra, si no entra ponemos a -1000 esa posicion en la qtable y elegimos otro de los maximos
                     print("Ficha: "+str(pent))
@@ -346,7 +365,11 @@ def game2(gameDisplay):
                     else:
                         print("Es valida")
                         valida=True
+                        
                 tablero.colocar_pentomino_2p(pentomino, x, y, TURNOS[-1])
+                aux_pent=[pentomino.letra,str(pentomino.rotacion),str(pentomino.invertido)]
+                action=tablero.fichas.index(aux_pent)
+                tablero.piezas.append(action)
                 teclas_escR(gameDisplay)
                 pulsadas.append(pentomino.letra)
                 tablero.buscar_huecos(TURNOS[-1])
@@ -360,8 +383,10 @@ def game2(gameDisplay):
             teclas_escR(gameDisplay)
             pr=parar_reiniciar()
             if pr=="Replay":
-                tablero=Tablero(8,8,FORMAS)
+                tablero.reset(FORMAS, modo)
+                tablero.seleccion_modo_real()
                 pulsadas=[]
+                descartadas=[]
                 board(tablero,gameDisplay)
                 turno = random.randint(1,2)
                 TURNOS.append(turno)
@@ -369,7 +394,8 @@ def game2(gameDisplay):
                 out=True
         if replay:
             replay=False
-            tablero=Tablero(8,8,FORMAS)
+            tablero.reset(FORMAS, modo)
+            tablero.seleccion_modo_real()
             pulsadas=[]
             board(tablero,gameDisplay)
             turno = random.randint(1,2)
@@ -385,6 +411,8 @@ def game2(gameDisplay):
 def game3(gameDisplay):
     pulsadas=[]
     descartadas=[]
+    
+    pygame.display.set_caption('Redes Neuronales')
     
     turno=piedra_papel_tijeras(gameDisplay)
     TURNOS.append(turno)
@@ -519,6 +547,7 @@ def game3(gameDisplay):
             replay=False
             tablero=Tablero(8,8,FORMAS)
             pulsadas=[]
+            descartadas=[]
             board(tablero, gameDisplay)
             turno = random.randint(1,2)
             TURNOS.append(turno)
@@ -530,7 +559,7 @@ def game3(gameDisplay):
 #     print(tablero.movimientos)
 
 
-def game4(gameDisplay):
+def game4(gameDisplay,modo):
     pulsadas=[]
     descartadas=[]
     
@@ -575,6 +604,8 @@ def game4(gameDisplay):
     gameDisplay.fill(BLACK)
     gameDisplay.blit(logo,(10, 0))
     tablero = Tablero(8,8, FORMAS)
+    tablero.seleccion_modo(modo)
+    tablero.seleccion_modo_real()
     board(tablero, gameDisplay)
     
     out = False
@@ -595,6 +626,9 @@ def game4(gameDisplay):
             panel_letras(pulsadas,descartadas, gameDisplay)
             if TURNOS[-1]==1:
                 print("Turno jugador 1")
+                p1, p2 = get_puntuacion(tablero)
+                display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, ROJO, gameDisplay)
+                pygame.display.update()
                 op=opciones(tablero)
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
@@ -611,6 +645,9 @@ def game4(gameDisplay):
                 print(tablero)
             else:
                 print("Turno jugador 2")
+                p1, p2 = get_puntuacion(tablero)
+                display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, AZUL, gameDisplay)
+                pygame.display.update()
                 op=opciones(tablero)
                 while not op:
                     print("Descartamos la "+tablero.pentominos[0])
@@ -642,6 +679,7 @@ def game4(gameDisplay):
             replay=False
             tablero=Tablero(8,8,FORMAS)
             pulsadas=[]
+            descartadas=[]
             board(tablero, gameDisplay)
             turno = random.randint(1,2)
             TURNOS.append(turno)
@@ -656,8 +694,8 @@ def piedra_papel_tijeras(gameDisplay):
     logo = pygame.transform.scale(logo, (250, 57))
     gameDisplay.blit(logo,(10, 0))
     
-    display_text("¿Quien juega primero?",display_width*0.50, display_height*0.05, 50, WHITE,gameDisplay)
-    display_text("Piedra, Pepel o Tijeras",display_width*0.50, display_height*0.15, 60, WHITE,gameDisplay)
+    display_text("¿Quién juega primero?",display_width*0.50, display_height*0.05, 50, WHITE,gameDisplay)
+    display_text("Piedra, Papel o Tijeras",display_width*0.50, display_height*0.15, 60, WHITE,gameDisplay)
     
     piedra=pygame.image.load('images/piedra.png')
     papel=pygame.image.load('images/papel.png')
@@ -728,7 +766,6 @@ def piedra_papel_tijeras(gameDisplay):
             gameDisplay.blit(logo,(10, 0))
             display_text("Resultado",display_width*0.50, display_height*0.15, 60, WHITE,gameDisplay)
             display_text("Pulsa cualquier tecla para comenzar el juego",display_width*0.50, display_height*0.95, 30, WHITE,gameDisplay)
-            print(ppt)
             gameDisplay.blit(ppt[eleccion],(display_width*0.25, display_height*0.31))
             gameDisplay.blit(ppt[p2],(display_width*0.55, display_height*0.31))
             if turno==1:
@@ -749,10 +786,67 @@ def piedra_papel_tijeras(gameDisplay):
             if event.type is pygame.KEYDOWN:
                 out=True
     
-    
-    
     gameDisplay.fill(BLACK)
     return turno
+
+
+def seleccion_modo(gameDisplay):
+    modo=1
+    gameDisplay.fill(BLACK)
+    logo=pygame.image.load('images/logo.png')
+    logo = pygame.transform.scale(logo, (250, 57))
+    gameDisplay.blit(logo,(10, 0))
+    
+    display_text("Selecciona el modelo de tablero",display_width*0.50, display_height*0.15, 100, WHITE,gameDisplay)
+    
+    modo1=pygame.image.load('images/modo1.png')
+    modo1_hover=pygame.image.load('images/modo1_hover.png')
+    modo2=pygame.image.load('images/modo2.png')
+    modo2_hover=pygame.image.load('images/modo2_hover.png')
+    modo3=pygame.image.load('images/modo3.png')
+    modo3_hover=pygame.image.load('images/modo3_hover.png')
+    
+    modo1 = pygame.transform.scale(modo1, (250, 250))
+    modo1_hover = pygame.transform.scale(modo1_hover, (250, 250))
+    modo2 = pygame.transform.scale(modo2, (250, 250))
+    modo2_hover = pygame.transform.scale(modo2_hover, (250, 250))
+    modo3 = pygame.transform.scale(modo3, (250, 250))
+    modo3_hover = pygame.transform.scale(modo3_hover, (250, 250))
+    
+    pygame.display.update()
+    
+    out=False
+    gameDisplay.blit(modo1_hover,(display_width*0.40, display_height*0.21))
+    gameDisplay.blit(modo2,(display_width*0.25, display_height*0.61))
+    gameDisplay.blit(modo3,(display_width*0.55, display_height*0.61))   
+    while not out:
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                tecla = pygame.key.name(event.key)
+                if tecla == "a":
+                    modo=2
+                    gameDisplay.blit(modo1,(display_width*0.40, display_height*0.21))
+                    gameDisplay.blit(modo2_hover,(display_width*0.25, display_height*0.61))
+                    gameDisplay.blit(modo3,(display_width*0.55, display_height*0.61)) 
+                    pygame.display.update()
+                if  tecla == "d":
+                    modo=3
+                    gameDisplay.blit(modo1,(display_width*0.40, display_height*0.21))
+                    gameDisplay.blit(modo2,(display_width*0.25, display_height*0.61))
+                    gameDisplay.blit(modo3_hover,(display_width*0.55, display_height*0.61)) 
+                    pygame.display.update()
+                if  tecla == "w":
+                    modo=1
+                    gameDisplay.blit(modo1_hover,(display_width*0.40, display_height*0.21))
+                    gameDisplay.blit(modo2,(display_width*0.25, display_height*0.61))
+                    gameDisplay.blit(modo3,(display_width*0.55, display_height*0.61))   
+                    pygame.display.update()
+                if tecla == "return":
+                    out=True
+    
+    gameDisplay.fill(BLACK)
+    return modo
                    
 
 def inicio():
@@ -768,7 +862,7 @@ def inicio():
     gameDisplay.blit(logo,(30,40))
     
     display_text("Redes Neuronales",display_width*0.27, display_height*0.76, 35, WHITE,gameDisplay)
-    display_text("Aprendizaje Automático",display_width*0.30, display_height*0.56, 35, WHITE,gameDisplay)
+    display_text("Q-Learning",display_width*0.24, display_height*0.56, 35, WHITE,gameDisplay)
     display_text("Dos Jugadores",display_width*0.70, display_height*0.65, 35, WHITE,gameDisplay)
     tecla_a=pygame.image.load('images/tecla_a.png')
     tecla_r=pygame.image.load('images/tecla_r.png')
@@ -803,10 +897,12 @@ if __name__=="__main__":
                     game3(gameDisplay)
                     gameDisplay=inicio()
                 elif tecla== "a":
-                    game2(gameDisplay)
+                    modo=seleccion_modo(gameDisplay)
+                    game2(gameDisplay,modo)
                     gameDisplay=inicio()
                 elif tecla== "q":
-                    game4(gameDisplay)
+                    modo=seleccion_modo(gameDisplay)
+                    game4(gameDisplay,modo)
                     gameDisplay=inicio()
                 elif tecla=="escape":
                     out=True

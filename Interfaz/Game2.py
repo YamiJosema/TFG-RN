@@ -366,6 +366,7 @@ if __name__=="__main__":
                     ultimo_movimiento=tablero.movimientos[-1][0]
                     state=tablero.fichas.index(ultimo_movimiento)
                 
+                print("Estado "+str(state))
                 rangos = rango_por_letra(tablero.pentominos)
                 action_completo = np.copy(qtable[state])#qtable[state] #Acciones para el estado
                 print(len(action_completo))

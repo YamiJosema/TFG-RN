@@ -31,13 +31,14 @@ class Tablero:
         return tablero
 
 
-    def reset(self,orden):
+    def reset(self,orden,modo):
         self.done = False;
         self.board = np.zeros((self.x,self.y), dtype=np.int)
         self.pentominos=orden.copy()
         self.movimientos=[]
         self.fichas_colocadas=0
         self.piezas=[]
+        self.seleccion_modo(modo)
         return 0,0,False
     
     
@@ -54,7 +55,7 @@ class Tablero:
         elif letra=="X":
             rotacion="0"
             inversa="0"
-        else: # letra=="I":
+        elif letra=="I":
             rotacion=str(random.randint(0,1))
             inversa="0"
             
@@ -98,10 +99,9 @@ class Tablero:
             next_state=state
         
         if next_state!=state:
+            reward=50
             if penalizacion>0:
-                reward=penalizacion*-10 #penalizacion por huecos
-            else:
-                reward=20
+                reward-=penalizacion*10 #penalizacion por huecos
         else:
             reward=-1000
             
@@ -109,6 +109,26 @@ class Tablero:
         done=True if fin==-1 else False
 
         return next_state, reward, done 
+    
+    
+    def seleccion_modo(self, modo):
+        if modo==2:
+            self.board[0][0]=1
+            self.board[self.y-1][0]=1
+            self.board[0][self.x-1]=1
+            self.board[self.y-1][self.x-1]=1
+        elif modo==3:
+            self.board[2][3]=1
+            self.board[3][5]=1
+            self.board[4][2]=1
+            self.board[5][4]=1
+            
+    
+    def seleccion_modo_real(self):
+        for i in range(self.x):
+            for j in range(self.y):
+                if self.board[i][j]==1:
+                    self.board[i][j]=3
     
     
     def colocar_sin_superposicion(self, pentomino, x, y):
@@ -279,8 +299,9 @@ class Tablero:
         return False
     
     
-    def colocar_pentomino_2p(self, pentomino, x, y, jugador):
+    def colocar_pentomino_2p(self, pentomino, x, y, jugador): #AQUI
 #         print("Colocar pentomino 2p")
+        
         colocado=True
         row=len(pentomino.modelo)
         cols=len(pentomino.modelo[0])
