@@ -255,10 +255,11 @@ def game2(gameDisplay,modo):
     pulsadas=[]
     descartadas=[]
     
+    pygame.display.set_caption('Q-Learning')
+    
     turno=piedra_papel_tijeras(gameDisplay)
     TURNOS.append(turno)
     
-    pygame.display.set_caption('Aprendizaje Automático')
     clock = pygame.time.Clock()
     
     gameDisplay.fill(BLACK)
@@ -410,6 +411,8 @@ def game2(gameDisplay,modo):
 def game3(gameDisplay):
     pulsadas=[]
     descartadas=[]
+    
+    pygame.display.set_caption('Redes Neuronales')
     
     turno=piedra_papel_tijeras(gameDisplay)
     TURNOS.append(turno)
@@ -859,7 +862,7 @@ def inicio():
     gameDisplay.blit(logo,(30,40))
     
     display_text("Redes Neuronales",display_width*0.27, display_height*0.76, 35, WHITE,gameDisplay)
-    display_text("Aprendizaje Automático",display_width*0.30, display_height*0.56, 35, WHITE,gameDisplay)
+    display_text("Q-Learning",display_width*0.24, display_height*0.56, 35, WHITE,gameDisplay)
     display_text("Dos Jugadores",display_width*0.70, display_height*0.65, 35, WHITE,gameDisplay)
     tecla_a=pygame.image.load('images/tecla_a.png')
     tecla_r=pygame.image.load('images/tecla_r.png')
