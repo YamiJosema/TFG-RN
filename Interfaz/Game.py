@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
+
+'''
+@author: Jose Manuel Pallero Hidalgo
+'''
+
 import pygame
 import numpy as np
 import random
 from Pentominos.Modelo import Tablero, Pentomino
-from Pentominos.Qlearning2 import qlearning2, get_key
+from Pentominos.Qlearning import qlearning, get_key
 from Pentominos.Utilidades import rango_por_letra, posicion_real
 from Pentominos.Neuronales import red_neuronal, get_max
 
@@ -269,7 +274,7 @@ def game2(gameDisplay,modo):
     tablero = Tablero(8,8, FORMAS)
     tablero.seleccion_modo(modo)
     
-    qtable = qlearning2(tablero.copy(),modo)
+    qtable = qlearning(tablero.copy(),modo)
     
     tablero.seleccion_modo_real()
     board(tablero,gameDisplay)

@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
+'''
+@author: Jose Manuel Pallero Hidalgo
+'''
 import csv
 import os 
-import random 
 import numpy as np
 # from Pentominos.Modelo import *
 # from Pentominos.Formas import modelo
-from Pentominos.Utilidades import cargar_pentominos, rango_por_letra, posicion_real
+from Pentominos.Utilidades import rango_por_letra, posicion_real
 
 # import pandas
-import array
-import sys
 
 import pandas
 import neurolab as nl
@@ -18,8 +18,7 @@ from neurolab import trans
 from neurolab import train
 from neurolab import error
 from neurolab import net
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn import linear_model
+from sklearn.model_selection import train_test_split
 from numpy import float32
 # from theano.tensor.basic import row
 # from numpy.f2py.rules import aux_rules
@@ -69,32 +68,11 @@ def crear_conjunto_entrenamiento(): #Darle solo los valores maximos, las que son
                 row_cortado=row_plano[zona[0]:zona[1]+1]
                 
                 row_maximo = np.where(row_cortado==np.amax(row_cortado))
-#                 if len(row_maximo[0])==0:
-#                     row_maximo = np.where(row_cortado==np.amax(row_cortado))
-                
-#                 print("Letra "+letra)
-#                 print('Zonas:'+str(zona))
-#                 print('Fila cortada:'+str(row_cortado))
-#                 print("Maximos: "+str(row_maximo[0]))
                 
                 for index in row_maximo[0]:
                     action=posicion_real(index, letra[0], Formas)
                     filewriter.writerow([row, action])
                     filewriter.writerow([row, action])
-#                     if row_cortado[index]!=0:
-#                         action=posicion_real(index, letra[0], Formas)+1
-# #                         print("State:"+str(row)+", Action:"+str(action))
-#                         rep=1
-#                         maximo=row_cortado[index]
-#                         if maximo>=10:
-#                             rep+=row_cortado[index]//10
-#                             rep=int(rep)  
-# #                             print("Maximo "+str(row_cortado[index]))
-# #                             print("Repeticiones "+str(rep))
-# #                             print(" ")
-#                         filewriter.writerow([row, action])
-#                         for _ in range(rep):
-#                             filewriter.writerow([row, action])
                 
                 if row==zona[0]-1 or letra=='F':
                     letra_i+=1
@@ -137,9 +115,7 @@ def get_entrada_objetivo():
 
 def red_neuronal(): #Parametros de entrada para el tamaño del tablero
     if os.path.isfile('../Pentominos/redes/red-50k-onlymax.net')==False:
-        funcion_activacion = trans.LogSig() #TODO probar otras funciones de activacion
-    #     valores_entrada=[[i] for i in range(1,63)]
-    #     valores_entrada.append([1,63])
+        funcion_activacion = trans.LogSig() 
         red = net.newff(minmax=[[0,1]]*63, size=[7,7,63], transf=[funcion_activacion]*3)
         red.reset()
         entrada, objetivo, prueba = get_entrada_objetivo()
@@ -148,12 +124,12 @@ def red_neuronal(): #Parametros de entrada para el tamaño del tablero
         np.random.seed(3287426346)    
     #     red.reset()
         for capa in red.layers:
-            capa.initf=init.init_zeros #InitRand([-1,1], 'bw') #Se puede poner a 0
+            capa.initf=init.init_zeros 
          
         red.init()   
         
-        red.trainf = train.train_gd #TODO probar otros tipos de entrenamiento
-        red.errorf = error.MAE() #TODO probar otros tipos de errores
+        red.trainf = train.train_gd 
+        red.errorf = error.MAE() 
         
         
         print ("Comienza el entrenamiento")
@@ -168,44 +144,3 @@ def red_neuronal(): #Parametros de entrada para el tamaño del tablero
         red = nl.load('../Pentominos/redes/red-50k-onlymax.net')
     return red
 
-
-if __name__=="__main__":
-#     tablero = Tablero(8,8)
-    entrada, objetivo, prueba=get_entrada_objetivo()
-#     print("Entrada")
-#     print(entrada)
-#     print(test_a)
-#     print("Shape: "+str(entrada.shape[1]))
-#     print("Objetivo")
-#     print(objetivo)
-#     print("Prueba")
-#     print(prueba)
-    
-#     solucion, prueba=red_neuronal()
-#     for s in range(len(solucion)):
-#         print(" ")
-#         print("Estado, Accion: "+str(get_max(prueba[s],solucion[s])))
-    
-#     inicio(8,8,2)
-#     introduciendo_letras(1000)
-#     print colocar_fichas_random(tablero)
-#     crear_conjunto_entrenamiento(1000)
-#     busqueda_profunidad()
-    
-# #     conjunto_correcto()
-#     salida, tableros = red_neuronal()
-#     print salida
-#     for i in range(len(tableros)):
-#         print tableros[i]
-#         print get_max(salida[i])
-        
-#     for pieza in salida:
-#         print get_max(pieza)
-
-#Estratificado y probar si la red aprende
-#Visualización
-#Conjunto de entrenamiento realista
-    
-        
-        
-    
