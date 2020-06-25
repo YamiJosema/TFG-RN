@@ -197,7 +197,7 @@ def colocar_letra(tablero, opciones,gameDisplay):
 
 def display_text(texto, x, y, size, color,gameDisplay):   
 #     font = pygame.font.Font('resources/8-BIT WONDER.TTF',size)
-    font = pygame.font.SysFont(None,size) #https://programtalk.com/python-examples/pygame.font.SysFont/
+    font = pygame.font.SysFont("calibri",size) #https://programtalk.com/python-examples/pygame.font.SysFont/
     textSurf = font.render(texto, True, color)
     textRect = textSurf.get_rect()
     textRect.center = (x, y)
@@ -291,8 +291,8 @@ def game2(gameDisplay,modo):
         i,_=tablero.siguiente_zero()
         p1, p2 = get_puntuacion(tablero)
         pygame.draw.rect(gameDisplay,BLACK,[0, display_height*0.85-60,display_width,100])
-        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, WHITE,gameDisplay)
-        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, WHITE,gameDisplay)
+        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 85, WHITE,gameDisplay)
+        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 85, WHITE,gameDisplay)
         
         for event in pygame.event.get():
             if event.type is pygame.QUIT:
@@ -447,8 +447,8 @@ def game3(gameDisplay):
         i,_=tablero.siguiente_zero()
         p1, p2 = get_puntuacion(tablero)
         pygame.draw.rect(gameDisplay,BLACK,[0, display_height*0.85-60,display_width,100])
-        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, WHITE, gameDisplay)
-        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, WHITE, gameDisplay)
+        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 85, WHITE, gameDisplay)
+        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 85, WHITE, gameDisplay)
         
         for event in pygame.event.get():
             if event.type is pygame.QUIT:
@@ -625,15 +625,15 @@ def game4(gameDisplay,modo):
         i,_=tablero.siguiente_zero()
         p1, p2 = get_puntuacion(tablero)
         pygame.draw.rect(gameDisplay,BLACK,[0, display_height*0.85-60,display_width,100])
-        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, WHITE, gameDisplay)
-        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, WHITE, gameDisplay)
+        display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 85, WHITE, gameDisplay)
+        display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 85, WHITE, gameDisplay)
         
         if i!=-1:
             panel_letras(pulsadas,descartadas, gameDisplay)
             if TURNOS[-1]==1:
                 print("Turno jugador 1")
                 p1, p2 = get_puntuacion(tablero)
-                display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 100, ROJO, gameDisplay)
+                display_text("P1:"+str(p1),display_width*0.2, display_height*0.85, 85, ROJO, gameDisplay)
                 pygame.display.update()
                 op=opciones(tablero)
                 while not op:
@@ -652,7 +652,7 @@ def game4(gameDisplay,modo):
             else:
                 print("Turno jugador 2")
                 p1, p2 = get_puntuacion(tablero)
-                display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 100, AZUL, gameDisplay)
+                display_text("P2:"+str(p2),display_width*0.8, display_height*0.85, 85, AZUL, gameDisplay)
                 pygame.display.update()
                 op=opciones(tablero)
                 while not op:
@@ -803,7 +803,7 @@ def seleccion_modo(gameDisplay):
     logo = pygame.transform.scale(logo, (250, 57))
     gameDisplay.blit(logo,(10, 0))
     
-    display_text("Selecciona el modelo de tablero",display_width*0.50, display_height*0.15, 100, WHITE,gameDisplay)
+    display_text("Selecciona el modelo de tablero",display_width*0.50, display_height*0.15, 75, WHITE,gameDisplay)
     
     modo1=pygame.image.load('images/modo1.png')
     modo1_hover=pygame.image.load('images/modo1_hover.png')
@@ -867,9 +867,9 @@ def inicio():
     logo=pygame.image.load('images/logo.png')
     gameDisplay.blit(logo,(30,40))
     
-    display_text("Redes Neuronales",display_width*0.27, display_height*0.76, 35, WHITE,gameDisplay)
+    display_text("Redes Neuronales",display_width*0.28, display_height*0.76, 35, WHITE,gameDisplay)
     display_text("Q-Learning",display_width*0.24, display_height*0.56, 35, WHITE,gameDisplay)
-    display_text("Dos Jugadores",display_width*0.70, display_height*0.65, 35, WHITE,gameDisplay)
+    display_text("Dos Jugadores",display_width*0.71, display_height*0.65, 35, WHITE,gameDisplay)
     tecla_a=pygame.image.load('images/tecla_a.png')
     tecla_r=pygame.image.load('images/tecla_r.png')
     tecla_q=pygame.image.load('images/tecla_q.png')
