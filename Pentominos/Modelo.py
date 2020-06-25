@@ -1,62 +1,77 @@
+# -*- coding: utf-8 -*-
+'''
+@author: Jose Manuel Pallero Hidalgo
+@email: josemapallero29@gmail.com
+'''
 import numpy as np
 from Pentominos.Formas import modelo
-from Pentominos.Utilidades import cargar_pentominos, Formas
+from Pentominos.Utilidades import cargar_pentominos
 import random 
-from _operator import pos
 
 
 class Tablero:
-    def __init__(self,x,y):
+    def __init__(self,x,y, orden):
         self.x=x
         self.y=y
         self.done = False;
         self.board = np.zeros((x,y), dtype=np.int)
-        self.pentominos=["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+        self.pentominos=orden.copy()
         self.movimientos=[]
         self.fichas_colocadas=0
-        self.fichas=cargar_pentominos()
+        self.fichas=cargar_pentominos(orden)
         self.piezas=[]
         
     
     def copy(self):
-        tablero=Tablero(self.x,self.y)
+        tablero=Tablero(self.x,self.y,self.pentominos)
         tablero.done = self.done;
         tablero.board = np.copy(self.board)
-        aux=[]
-        aux.append(self.pentominos)
-        tablero.pentominos=aux
-        aux=[]
-        aux.append(self.movimientos)
-        tablero.movimientos=aux
+        tablero.pentominos=self.pentominos.copy()
+        tablero.movimientos=self.movimientos.copy()
         tablero.fichas_colocadas=self.fichas_colocadas
-        aux=[]
-        aux.append(self.piezas)
-        tablero.piezas=aux
+        tablero.piezas=self.piezas.copy()
         
         return tablero
 
 
-    def reset(self):
+    def reset(self,orden,modo):
         self.done = False;
         self.board = np.zeros((self.x,self.y), dtype=np.int)
-        self.pentominos=["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+        self.pentominos=orden.copy()
         self.movimientos=[]
         self.fichas_colocadas=0
         self.piezas=[]
+        self.seleccion_modo(modo)
         return 0,0,False
     
     
     def ficha_aleatoria(self):
 #         print("Ficha aleatoria")
-        ficha = self.fichas[random.randint(0,len(self.fichas)-1)]
+        no_inversa=["T","U","V","W"]
+        letra=self.pentominos[0]
+        rotacion=str(random.randint(0,3))
+        inversa=str(random.randint(0,1))
+        if letra in no_inversa:
+            inversa="0"
+        elif letra=="Z":
+            rotacion=str(random.randint(0,1))
+        elif letra=="X":
+            rotacion="0"
+            inversa="0"
+        elif letra=="I":
+            rotacion=str(random.randint(0,1))
+            inversa="0"
+            
+        ficha=[letra, rotacion, inversa]
         action = self.fichas.index(ficha)
+        
         return action
     
 
     def colocar_siguiente(self, action,state):
 #         print("Colocar siguiente")
         penalizacion=0
-        pent=self.fichas[action]
+        pent=self.fichas[action-1]
         pentomino = Pentomino(pent[0],int(pent[1]),int(pent[2]))
         if pentomino.letra in self.pentominos:
             colocado=False
@@ -70,26 +85,53 @@ class Tablero:
             if colocado:
 #                 print("Colocada satisfactoriamente en la posicion ("+str(i)+", "+str(j)+")")
                 self.fichas_colocadas+=1
-                ficha=[pentomino.letra,str(pentomino.rotacion),str(pentomino.invertido)]
-                next_state=(self.fichas.index(ficha)+1)*self.fichas_colocadas*(Formas.index(pent[0])+1)
+                
+#                 ficha=[pentomino.letra,str(pentomino.rotacion),str(pentomino.invertido)]
+                next_state=action
                 
                 self.buscar_huecos(action)
                 penalizacion=self.penalizacion(action)
-                penalizacion*=0.2#0.1
+#                 penalizacion*=0.1#0.2
                 
-                self.piezas.append(action)
+                self.piezas.append(action-1)
             else:
 #                 print("La ficha no puede ser colocada en el tablero")
+#                TODO penalizar en puntos si la ficha no se puede colocar en el tablero (interesante que el tablero guarde las puntiaciones)
                 next_state=state
         else:
             next_state=state
         
-        reward=1-penalizacion if next_state!=state else -100 #TODO penalizacion por huecos
-        
+        if next_state!=state:
+            reward=50
+            if penalizacion>0:
+                reward-=penalizacion*10 #penalizacion por huecos
+        else:
+            reward=-1000
+            
         fin,_=self.siguiente_zero()
         done=True if fin==-1 else False
 
         return next_state, reward, done 
+    
+    
+    def seleccion_modo(self, modo):
+        if modo==2:
+            self.board[0][0]=1
+            self.board[self.y-1][0]=1
+            self.board[0][self.x-1]=1
+            self.board[self.y-1][self.x-1]=1
+        elif modo==3:
+            self.board[2][3]=1
+            self.board[3][5]=1
+            self.board[4][2]=1
+            self.board[5][4]=1
+            
+    
+    def seleccion_modo_real(self):
+        for i in range(self.x):
+            for j in range(self.y):
+                if self.board[i][j]==1:
+                    self.board[i][j]=3
     
     
     def colocar_sin_superposicion(self, pentomino, x, y):
@@ -122,37 +164,46 @@ class Tablero:
     
     def comprobar_pentomino(self, pentomino):
         valido=False
-        while not valido:
-            pos_x, pos_y=self.siguiente_zero()
-            if pos_x==-1:
-                break
-            if pentomino.letra=="X" or (pentomino.letra=="T" and pentomino.modelo[0][0]==0):
-                org_y=pos_y-1
-#                 print("LETRA X: "+pentomino.letra)
-#                 print("Origniales: ("+str(pos_x)+", "+str(org_y)+")")
-                valido=self.comprobar_pentomino_individual(pentomino,pos_x,org_y)
-#                 print("Valido O: "+str(valido))
+#         while not valido:
+        for i in range(self.x):
+            for j in range(self.y):
+                valido=self.comprobar_pentomino_individual(pentomino,i,j)
                 if valido:
-                    pos_y=org_y
-                if not valido and org_y>=0:
-                    self.board[pos_x][pos_y]=10
-            if not valido:
-#                 print("LETRA: "+pentomino.letra)
-#                 print("Origniales: ("+str(pos_x)+", "+str(pos_y)+")")
-                valido_O=self.comprobar_pentomino_individual(pentomino,pos_x,pos_y)
-#                 print("Valido O: "+str(valido_O))
-                aux_y=pos_y-(len(pentomino.modelo[0])-1)
-#                 print("Modificados: ("+str(pos_x)+", "+str(aux_y)+")")
-                valido_M=self.comprobar_pentomino_individual(pentomino,pos_x, aux_y)
-#                 print("Valido M: "+str(valido_M))
-                if valido_M:
-                    pos_y=aux_y
-                if not valido_O and not valido_M:
-                    self.board[pos_x][pos_y]=10
-                valido=valido_O  or valido_M
-        self.limpiar_huecos()
-#         print("Posicion Final: ("+str(pos_x)+", "+str(pos_y)+")")
-        return pos_x, pos_y
+                    return i,j
+        return -1, -1
+        
+#         valido=False
+#         while not valido:
+#             pos_x, pos_y=self.siguiente_zero()
+#             if pos_x==-1:
+#                 break
+#             if pentomino.letra=="X" or (pentomino.letra=="T" and pentomino.modelo[0][0]==0):
+#                 org_y=pos_y-1
+# #                 print("LETRA X: "+pentomino.letra)
+# #                 print("Origniales: ("+str(pos_x)+", "+str(org_y)+")")
+#                 valido=self.comprobar_pentomino_individual(pentomino,pos_x,org_y)
+# #                 print("Valido O: "+str(valido))
+#                 if valido:
+#                     pos_y=org_y
+#                 if not valido and org_y>=0:
+#                     self.board[pos_x][pos_y]=10
+#             if not valido:
+# #                 print("LETRA: "+pentomino.letra)
+# #                 print("Origniales: ("+str(pos_x)+", "+str(pos_y)+")")
+#                 valido_O=self.comprobar_pentomino_individual(pentomino,pos_x,pos_y)
+# #                 print("Valido O: "+str(valido_O))
+#                 aux_y=pos_y-(len(pentomino.modelo[0])-1)
+# #                 print("Modificados: ("+str(pos_x)+", "+str(aux_y)+")")
+#                 valido_M=self.comprobar_pentomino_individual(pentomino,pos_x, aux_y)
+# #                 print("Valido M: "+str(valido_M))
+#                 if valido_M:
+#                     pos_y=aux_y
+#                 if not valido_O and not valido_M:
+#                     self.board[pos_x][pos_y]=10
+#                 valido=valido_O  or valido_M
+#         self.limpiar_huecos()
+# #         print("Posicion Final: ("+str(pos_x)+", "+str(pos_y)+")")
+#         return pos_x, pos_y
     
     
     def siguiente_zero(self):
@@ -215,6 +266,13 @@ class Tablero:
                     else:
                         if self.board[i][j-1]!=0 and self.board[i][j+1]!=0 and self.board[i-1][j]!=0 and self.board[i+1][j]!=0:
                             self.board[i][j]=jugador*-1
+                            
+                            
+    def limpiar_huecos(self):
+        for i in range(self.x):
+            for j in range(self.y):
+                if self.board[i][j]==10:
+                    self.board[i][j]=0   
     
     
 # --------------------------------------------------OTROS METODOS-------------------------------------------------------------------    
@@ -244,8 +302,9 @@ class Tablero:
         return False
     
     
-    def colocar_pentomino_2p(self, pentomino, x, y, jugador):
+    def colocar_pentomino_2p(self, pentomino, x, y, jugador): #AQUI
 #         print("Colocar pentomino 2p")
+        
         colocado=True
         row=len(pentomino.modelo)
         cols=len(pentomino.modelo[0])
@@ -270,18 +329,12 @@ class Tablero:
                 cy=y
             if colocado:
                 self.pentominos.remove(pentomino.letra)
-                self.movimientos.append((pentomino,x,y))
+                movimiento=[pentomino.letra,str(pentomino.rotacion), str(pentomino.invertido)]
+                self.movimientos.append((movimiento,x,y))
                 self.fichas_colocadas+=1
         else:
             colocado=False
         return colocado
-    
-    
-    def limpiar_huecos(self):
-        for i in range(self.x):
-            for j in range(self.y):
-                if self.board[i][j]==10:
-                    self.board[i][j]=0    
     
     
     def uno_cerca(self, i,j):
@@ -300,7 +353,7 @@ class Tablero:
     
     def comprobar_fichas(self,i,j,aux_board): #Done
 #         print("Comprobar fichas")
-        tablero_aux=Tablero(len(aux_board),len(aux_board[0]))
+        tablero_aux=Tablero(len(aux_board),len(aux_board[0]),self.pentominos)
         tablero_aux.board=np.copy(aux_board)
         for letra in self.pentominos:
             for rot in range(4):
@@ -392,6 +445,9 @@ class Tablero:
                             self.board=aux_board
                             self.cerrar_hueco(huecos)
                             
+                            
+#     def siguiente_hueco(self, pentomino):
+#         #TODO Buscar las posiciones x e y el pentomino
                             
     def __str__(self):
         return str(self.board)
