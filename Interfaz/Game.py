@@ -2,6 +2,7 @@
 
 '''
 @author: Jose Manuel Pallero Hidalgo
+@email: josemapallero29@gmail.com
 '''
 
 import pygame

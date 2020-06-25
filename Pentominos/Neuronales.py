@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 '''
 @author: Jose Manuel Pallero Hidalgo
+@email: josemapallero29@gmail.com
 '''
+
 import csv
 import os 
 import numpy as np
