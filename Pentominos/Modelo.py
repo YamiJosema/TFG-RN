@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 '''
 @author: Jose Manuel Pallero Hidalgo
+@email: josemapallero29@gmail.com
 '''
 import numpy as np
 from Pentominos.Formas import modelo
 from Pentominos.Utilidades import cargar_pentominos
 import random 
-from builtins import next
 
 
 class Tablero:
